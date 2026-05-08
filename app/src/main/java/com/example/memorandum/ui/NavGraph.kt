@@ -33,7 +33,9 @@ fun NavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.NoteEditor.route) { backStackEntry ->
-            val noteId = backStackEntry.arguments?.getString("noteId")
+            val noteIdStr = backStackEntry.arguments?.getString("noteId")
+            val noteId = noteIdStr?.toIntOrNull() ?: -1
+
             NoteEditorScreen(
                 noteId = noteId,
                 onBack = { navController.popBackStack() }

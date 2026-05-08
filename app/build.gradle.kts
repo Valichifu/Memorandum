@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-
 }
 
 android {
@@ -18,7 +17,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -29,6 +30,12 @@ android {
                 "proguard-rules.pro"
             )
         }
+    }
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
+    kotlin {
+        jvmToolchain(21)
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
