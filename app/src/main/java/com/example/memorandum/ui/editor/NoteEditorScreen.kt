@@ -11,7 +11,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun NoteEditorScreen(
-    noteId: Int,
+        noteId: Int,
     onBack: () -> Unit,
     viewModel: NoteEditorViewModel = hiltViewModel()
 ) {

@@ -7,11 +7,19 @@ import androidx.navigation.compose.composable
 import com.example.memorandum.ui.editor.NoteEditorScreen
 import com.example.memorandum.ui.list.NoteListScreen
 import com.example.memorandum.ui.settings.SettingsScreen
+import com.example.memorandum.ui.welcome.WelcomeLogoScreen
 
 sealed class Screen(val route: String) {
+
+    object WelcomeLogo : Screen("welcome_logo")
+
     object NoteList : Screen("note_list")
     object NoteEditor : Screen("note_editor/{noteId}") {
         fun createRoute(noteId: String = "new") = "note_editor/$noteId"
+    }
+    object FolderList : Screen("folder_list")
+    object FolderEditor : Screen("folder_editor/{folderId}") {
+        fun createRoute(folderId: String = "new") = "folder_editor/$folderId"
     }
     object Settings : Screen("settings")
 }
@@ -20,12 +28,22 @@ sealed class Screen(val route: String) {
 fun NavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screen.NoteList.route
+        startDestination = Screen.WelcomeLogo.route
     ) {
+        composable(Screen.WelcomeLogo.route) {
+            WelcomeLogoScreen(
+                onAnimationComplete = {
+                    navController.navigate(Screen.NoteList.route) {
+                        popUpTo(Screen.WelcomeLogo.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Screen.NoteList.route) {
             NoteListScreen(
                 onNoteClick = { id ->
-                    navController.navigate(Screen.NoteEditor.createRoute(id))
+                    navController.navigate(Screen.NoteEditor.createRoute(id.toString()))
                 },
                 onAddNote = {
                     navController.navigate(Screen.NoteEditor.createRoute())
@@ -41,6 +59,8 @@ fun NavGraph(navController: NavHostController) {
                 onBack = { navController.popBackStack() }
             )
         }
+
+        // Settings Screen
         composable(Screen.Settings.route) {
             SettingsScreen(onBack = { navController.popBackStack() })
         }

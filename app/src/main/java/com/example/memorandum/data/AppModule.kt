@@ -24,13 +24,10 @@ object AppModule {
     }
 
     @Provides
+    @Singleton
     fun provideNoteDao(database: NoteDatabase): NoteDao {
         return database.noteDao()
     }
-
-    @Provides
-    @Singleton
-    fun provideNoteMapper(): NoteMapper = NoteMapper()
 
     @Provides
     @Singleton
