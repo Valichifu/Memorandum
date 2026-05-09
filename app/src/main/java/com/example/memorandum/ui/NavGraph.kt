@@ -47,6 +47,9 @@ fun NavGraph(navController: NavHostController) {
                 },
                 onAddNote = {
                     navController.navigate(Screen.NoteEditor.createRoute())
+                },
+                onSettings={
+                    navController.navigate(Screen.Settings.route)
                 }
             )
         }
@@ -60,7 +63,6 @@ fun NavGraph(navController: NavHostController) {
             )
         }
 
-        // Settings Screen
         composable(Screen.Settings.route) {
             SettingsScreen(onBack = { navController.popBackStack() })
         }
