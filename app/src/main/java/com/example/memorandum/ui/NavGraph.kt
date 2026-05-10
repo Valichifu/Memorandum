@@ -1,11 +1,13 @@
 package com.example.memorandum.ui
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.memorandum.ui.editor.NoteEditorScreen
 import com.example.memorandum.ui.list.NoteListScreen
+import com.example.memorandum.ui.list.NoteListViewModel
 import com.example.memorandum.ui.settings.SettingsScreen
 import com.example.memorandum.ui.welcome.WelcomeLogoScreen
 
@@ -41,14 +43,17 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.NoteList.route) {
+            val viewModel: NoteListViewModel = hiltViewModel()
+
             NoteListScreen(
+                viewModel = viewModel,
                 onNoteClick = { id ->
                     navController.navigate(Screen.NoteEditor.createRoute(id.toString()))
                 },
                 onAddNote = {
                     navController.navigate(Screen.NoteEditor.createRoute())
                 },
-                onSettings={
+                onSettings = {
                     navController.navigate(Screen.Settings.route)
                 }
             )
