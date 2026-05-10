@@ -75,4 +75,17 @@ class FakeNoteRepository : NoteRepository {
             }.sortedByDescending { it.createdAt }
         }
     }
+    override fun getNotesInFolder(folderId: Int): Flow<List<Note>> {
+        return _notes.map { notes ->
+            notes.filter { it.folderId == folderId }
+                .sortedByDescending { it.createdAt }
+        }
+    }
+
+    override fun getRootNotes(): Flow<List<Note>> {
+        return _notes.map { notes ->
+            notes.filter { it.folderId == null }
+                .sortedByDescending { it.createdAt }
+        }
+    }
 }

@@ -19,5 +19,7 @@ interface NoteRepository {
 
     fun searchNotesSortedByCreatedAt(query: String): Flow<List<Note>>
 
+    fun getNotesInFolder(folderId: Int): Flow<List<Note>>
+    fun getRootNotes(): Flow<List<Note>>
 
 }

@@ -14,7 +14,9 @@ class NoteMapper @Inject constructor() {
             tags = entity.tags.split(",").filter { it.isNotBlank() },
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
-            isFavorite = entity.isFavorite
+            isFavorite = entity.isFavorite,
+            folderId = entity.folderId
+
         )
     }
 
@@ -26,7 +28,8 @@ class NoteMapper @Inject constructor() {
             tags = domain.tags.joinToString(","),
             createdAt = domain.createdAt,
             updatedAt = domain.updatedAt,
-            isFavorite = domain.isFavorite
+            isFavorite = domain.isFavorite,
+            folderId = domain.folderId
         )
     }
 }

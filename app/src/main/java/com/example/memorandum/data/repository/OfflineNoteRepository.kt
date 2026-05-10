@@ -70,4 +70,15 @@ class OfflineNoteRepository @Inject constructor(
             entities.map { noteMapper.toDomain(it) }
         }
     }
+    override fun getNotesInFolder(folderId: Int): Flow<List<Note>> {
+        return noteDao.getNotesInFolder(folderId).map { entities ->
+            entities.map { noteMapper.toDomain(it) }
+        }
+    }
+
+    override fun getRootNotes(): Flow<List<Note>> {
+        return noteDao.getRootNotes().map { entities ->
+            entities.map { noteMapper.toDomain(it) }
+        }
+    }
 }
