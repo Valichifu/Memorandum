@@ -10,9 +10,9 @@ import androidx.compose.ui.Modifier
 @Composable
 fun NoteListScreen(
     onNoteClick: (Int) -> Unit,
-    onAddNote: () -> Unit
+    onAddNote: () -> Unit,
+    onSettings: () -> Unit
 ) {
-    // TODO: Lucian   Implement the UI for the note list screen, including a list of notes and an "Add Note" button.
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
