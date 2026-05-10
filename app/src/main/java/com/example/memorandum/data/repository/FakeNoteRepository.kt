@@ -54,4 +54,25 @@ class FakeNoteRepository : NoteRepository {
         _notes.map { notes ->
             notes.filter { it.tags.contains(tag) }
         }
+
+    override fun getNotesSortedByCreatedAt(): Flow<List<Note>> {
+        return _notes.map { notes ->
+            notes.sortedByDescending { it.createdAt }
+        }
+    }
+
+    override fun getNotesSortedByUpdatedAt(): Flow<List<Note>> {
+        return _notes.map { notes ->
+            notes.sortedByDescending { it.updatedAt }
+        }
+    }
+
+    override fun searchNotesSortedByCreatedAt(query: String): Flow<List<Note>> {
+        return _notes.map { notes ->
+            notes.filter {
+                it.title.contains(query, ignoreCase = true) ||
+                        it.content.contains(query, ignoreCase = true)
+            }.sortedByDescending { it.createdAt }
+        }
+    }
 }

@@ -12,4 +12,12 @@ interface NoteRepository {
 
     fun searchNotes(query: String): Flow<List<Note>>
     fun getNotesByTag(tag: String): Flow<List<Note>>
+
+    fun getNotesSortedByCreatedAt(): Flow<List<Note>>
+
+    fun getNotesSortedByUpdatedAt(): Flow<List<Note>>
+
+    fun searchNotesSortedByCreatedAt(query: String): Flow<List<Note>>
+
+
 }

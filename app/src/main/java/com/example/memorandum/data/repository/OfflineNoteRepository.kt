@@ -52,4 +52,22 @@ class OfflineNoteRepository @Inject constructor(
                 entities.map { noteMapper.toDomain(it) }
             }
     }
+
+    override fun getNotesSortedByCreatedAt(): Flow<List<Note>> {
+        return noteDao.getNotesSortedByCreatedAt().map { entities ->
+            entities.map { noteMapper.toDomain(it) }
+        }
+    }
+
+    override fun getNotesSortedByUpdatedAt(): Flow<List<Note>> {
+        return noteDao.getNotesSortedByUpdatedAt().map { entities ->
+            entities.map { noteMapper.toDomain(it) }
+        }
+    }
+
+    override fun searchNotesSortedByCreatedAt(query: String): Flow<List<Note>> {
+        return noteDao.searchNotesSortedByCreatedAt(query).map { entities ->
+            entities.map { noteMapper.toDomain(it) }
+        }
+    }
 }
