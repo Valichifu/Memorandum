@@ -30,6 +30,10 @@ class NoteListViewModel @Inject constructor(
 
     private val _searchQuery = MutableStateFlow("")
     private val _sortType = MutableStateFlow(SortType.CREATED_AT_DESC)
+    private val _selectedTag = MutableStateFlow<String?>(null)
+
+    val currentSortType: StateFlow<SortType> = _sortType.asStateFlow()
+    val selectedTag: StateFlow<String?> = _selectedTag.asStateFlow()
 
     init {
         observeNotesWithSearch()
@@ -38,31 +42,42 @@ class NoteListViewModel @Inject constructor(
     @OptIn(FlowPreview::class)
     private fun observeNotesWithSearch() {
         viewModelScope.launch {
-            combine(_searchQuery, _sortType) { query, sort -> query to sort }
+            combine(_searchQuery, _sortType, _selectedTag) { query, sort, tag -> Triple(query, sort, tag) }
                 .debounce(300L)
                 .distinctUntilChanged()
-                .flatMapLatest { (query, sort) ->
-                    when {
-                        query.isNotBlank() && sort == SortType.CREATED_AT_DESC -> {
-                            repository.searchNotesSortedByCreatedAt(query)
+                .flatMapLatest { (query, sort, tag) ->
+                    if (tag != null) {
+                        repository.getNotesByTag(tag).map { notes ->
+                            val filtered = if (query.isBlank()) notes else notes.filter {
+                                it.title.contains(query, ignoreCase = true) ||
+                                        it.content.contains(query, ignoreCase = true)
+                            }
+                            when (sort) {
+                                SortType.CREATED_AT_DESC -> filtered.sortedByDescending { it.createdAt }
+                                SortType.UPDATED_AT_DESC -> filtered.sortedByDescending { it.updatedAt }
+                                SortType.ALPHABETICAL_ASC -> filtered.sortedBy { it.title.lowercase() }
+                            }
                         }
-
-                        query.isBlank() && sort == SortType.CREATED_AT_DESC -> {
-                            repository.getNotesSortedByCreatedAt()
-                        }
-
-                        query.isBlank() && sort == SortType.UPDATED_AT_DESC -> {
-                            repository.getNotesSortedByUpdatedAt()
-                        }
-
-                        else -> {
-                            val baseFlow = if (query.isBlank()) repository.getAllNotes() else repository.searchNotes(query)
-
-                            baseFlow.map { notes ->
-                                when (sort) {
-                                    SortType.ALPHABETICAL_ASC -> notes.sortedBy { it.title.lowercase() }
-                                    SortType.UPDATED_AT_DESC -> notes.sortedByDescending { it.updatedAt }
-                                    else -> notes
+                    }
+                    else {
+                        when {
+                            query.isNotBlank() && sort == SortType.CREATED_AT_DESC -> {
+                                repository.searchNotesSortedByCreatedAt(query)
+                            }
+                            query.isBlank() && sort == SortType.CREATED_AT_DESC -> {
+                                repository.getNotesSortedByCreatedAt()
+                            }
+                            query.isBlank() && sort == SortType.UPDATED_AT_DESC -> {
+                                repository.getNotesSortedByUpdatedAt()
+                            }
+                            else -> {
+                                val baseFlow = if (query.isBlank()) repository.getAllNotes() else repository.searchNotes(query)
+                                baseFlow.map { notes ->
+                                    when (sort) {
+                                        SortType.ALPHABETICAL_ASC -> notes.sortedBy { it.title.lowercase() }
+                                        SortType.UPDATED_AT_DESC -> notes.sortedByDescending { it.updatedAt }
+                                        else -> notes
+                                    }
                                 }
                             }
                         }
@@ -78,6 +93,7 @@ class NoteListViewModel @Inject constructor(
 
     fun onSearchQueryChanged(newQuery: String) { _searchQuery.value = newQuery }
     fun sortBy(type: SortType) { _sortType.value = type }
+    fun selectTag(tag: String?) { _selectedTag.value = tag }
 
     fun deleteNote(note: Note) {
         viewModelScope.launch {
