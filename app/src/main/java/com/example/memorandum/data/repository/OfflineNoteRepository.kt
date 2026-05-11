@@ -81,4 +81,16 @@ class OfflineNoteRepository @Inject constructor(
             entities.map { noteMapper.toDomain(it) }
         }
     }
+
+    override fun getDeletedNotes(): Flow<List<Note>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun restoreNote(note: Note) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun permanentDeleteNote(note: Note) {
+        TODO("Not yet implemented")
+    }
 }

@@ -88,4 +88,16 @@ class FakeNoteRepository : NoteRepository {
                 .sortedByDescending { it.createdAt }
         }
     }
+
+    override fun getDeletedNotes(): Flow<List<Note>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun restoreNote(note: Note) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun permanentDeleteNote(note: Note) {
+        TODO("Not yet implemented")
+    }
 }

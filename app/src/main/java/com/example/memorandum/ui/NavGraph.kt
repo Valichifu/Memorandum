@@ -12,6 +12,7 @@ import com.example.memorandum.ui.settings.SettingsScreen
 import com.example.memorandum.ui.welcome.WelcomeLogoScreen
 import com.example.memorandum.ui.folder.FolderListScreen
 import com.example.memorandum.ui.folder.FolderEditorScreen
+import com.example.memorandum.ui.settings.SettingsViewModel
 import com.example.memorandum.ui.trash.TrashScreen
 
 sealed class Screen(val route: String) {
@@ -52,7 +53,7 @@ fun NavGraph(navController: NavHostController) {
             val viewModel: NoteListViewModel = hiltViewModel()
 
             NoteListScreen(
-                //viewModel = viewModel,
+                viewModel = viewModel,
                 onNoteClick = { id ->
                     navController.navigate(Screen.NoteEditor.createRoute(id.toString()))
                 },
@@ -75,13 +76,16 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Settings.route) {
+            val viewModel: SettingsViewModel = hiltViewModel() // ✅ Adaugă ViewModel
+
             SettingsScreen(
+                viewModel = viewModel, // ✅ Pasează ViewModel
                 onBack = { navController.popBackStack() },
                 onTrashClick = {
                     navController.navigate(Screen.Trash.route)
                 },
                 onLayoutChange = { isTiles ->
-                    // TODO: (Rows vs Tiles)
+                    // TODO: Trimite către NoteListViewModel să schimbe layout-ul
                 }
             )
         }
