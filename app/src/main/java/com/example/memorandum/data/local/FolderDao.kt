@@ -23,7 +23,9 @@ interface FolderDao {
 
     @Query("SELECT * FROM notes WHERE folderId = :folderId")
     fun getNotesInFolder(folderId: Int): Flow<List<NoteEntity>>
+    @Query("SELECT * FROM folders WHERE id = :id")
+    fun getFolderById(id: Int): Flow<FolderEntity?>
 
-    @Query("SELECT * FROM notes WHERE folderId IS NULL")
-    fun getRootNotes(): Flow<List<NoteEntity>>
+    //@Query("SELECT * FROM notes WHERE folderId IS NULL")
+    //fun getRootNotes(): Flow<List<NoteEntity>>
 }
