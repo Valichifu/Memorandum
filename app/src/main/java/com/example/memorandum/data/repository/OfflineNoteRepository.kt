@@ -5,6 +5,7 @@ import com.example.memorandum.data.local.NoteMapper
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -70,6 +71,7 @@ class OfflineNoteRepository @Inject constructor(
             entities.map { noteMapper.toDomain(it) }
         }
     }
+
     override fun getNotesInFolder(folderId: Int): Flow<List<Note>> {
         return noteDao.getNotesInFolder(folderId).map { entities ->
             entities.map { noteMapper.toDomain(it) }
@@ -83,14 +85,26 @@ class OfflineNoteRepository @Inject constructor(
     }
 
     override fun getDeletedNotes(): Flow<List<Note>> {
-        TODO("Not yet implemented")
+        return noteDao.getDeletedNotes().map { entities ->
+            entities.map { noteMapper.toDomain(it) }
+        }
     }
 
-    override suspend fun restoreNote(note: Note) {
-        TODO("Not yet implemented")
+    override suspend fun restoreNote(noteId: Int) {
+        val noteEntity = noteDao.getNoteById(noteId).firstOrNull() ?: return
+        noteDao.updateNote(
+            noteEntity.copy(
+                isDeleted = false,
+                deletedAt = null
+            )
+        )
     }
 
-    override suspend fun permanentDeleteNote(note: Note) {
-        TODO("Not yet implemented")
+    override suspend fun permanentDeleteNote(noteId: Int) {
+        noteDao.deleteNoteById(noteId)
+    }
+
+    override suspend fun emptyTrash() {
+        noteDao.deleteAllDeletedNotes()
     }
 }

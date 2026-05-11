@@ -20,7 +20,7 @@ fun SettingsScreen(
     onTrashClick: () -> Unit,
     onLayoutChange: (Boolean) -> Unit
 ) {
-    val state by viewModel.state.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showTrashDaysDialog by remember { mutableStateOf(false) }
 
@@ -43,20 +43,18 @@ fun SettingsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Language Section
             item {
                 SettingsSection(title = "Language") {
                     SettingsOption(
-                        text = state.language,
+                        text = uiState.language,
                         onClick = { showLanguageDialog = true },
                         trailingIcon = Icons.Default.ArrowForward
                     )
                 }
             }
 
-            // Dark/Light Mode
             item {
-                SettingsSection(title = "Dark/Light") {
+                SettingsSection(title = "Appearance") {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -66,47 +64,48 @@ fun SettingsScreen(
                     ) {
                         Text("Dark Mode")
                         Switch(
-                            checked = state.isDarkMode,
+                            checked = uiState.isDarkMode,
                             onCheckedChange = { viewModel.toggleDarkMode() }
                         )
                     }
                 }
             }
 
-            // Recent Delete
             item {
                 SettingsSection(title = "Recent Delete") {
                     SettingsOption(
-                        text = "Trash Settings",
+                        text = "Open Trash",
                         onClick = onTrashClick,
                         trailingIcon = Icons.Default.Delete
                     )
                     Spacer(Modifier.height(8.dp))
                     SettingsOption(
-                        text = "Auto-delete after ${state.trashAutoDeleteDays} days",
+                        text = "Auto-delete after ${uiState.trashAutoDeleteDays} days",
                         onClick = { showTrashDaysDialog = true },
                         trailingIcon = Icons.Default.ArrowForward
                     )
                 }
             }
 
-            // Layout
             item {
                 SettingsSection(title = "Layout") {
                     Column {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { viewModel.toggleLayout(isTile = false) }
+                                .clickable {
+                                    viewModel.setLayout(false)
+                                    onLayoutChange(false)
+                                }
                                 .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text("Rows")
-                            Checkbox(
-                                checked = !state.isTileLayout,
-                                onCheckedChange = {
-                                    viewModel.toggleLayout(isTile = false)
+                            RadioButton(
+                                selected = !uiState.isTileLayout,
+                                onClick = {
+                                    viewModel.setLayout(false)
                                     onLayoutChange(false)
                                 }
                             )
@@ -114,16 +113,19 @@ fun SettingsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { viewModel.toggleLayout(isTile = true) }
+                                .clickable {
+                                    viewModel.setLayout(true)
+                                    onLayoutChange(true)
+                                }
                                 .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text("Tiles")
-                            Checkbox(
-                                checked = state.isTileLayout,
-                                onCheckedChange = {
-                                    viewModel.toggleLayout(isTile = true)
+                            RadioButton(
+                                selected = uiState.isTileLayout,
+                                onClick = {
+                                    viewModel.setLayout(true)
                                     onLayoutChange(true)
                                 }
                             )
@@ -133,28 +135,27 @@ fun SettingsScreen(
             }
         }
 
-        // Language Dialog
         if (showLanguageDialog) {
             AlertDialog(
                 onDismissRequest = { showLanguageDialog = false },
                 title = { Text("Select Language") },
                 text = {
                     Column {
-                        listOf("English", "Romanian", "Ukraine", "Spanish", "Portugis").forEach { lang ->
+                        listOf("English", "Romanian", "Ukrainian", "Spanish", "Portuguese").forEach { lang ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        viewModel.updateLanguage(lang)
+                                        viewModel.setLanguage(lang)
                                         showLanguageDialog = false
                                     }
                                     .padding(vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 RadioButton(
-                                    selected = state.language == lang,
+                                    selected = uiState.language == lang,
                                     onClick = {
-                                        viewModel.updateLanguage(lang)
+                                        viewModel.setLanguage(lang)
                                         showLanguageDialog = false
                                     }
                                 )
@@ -172,14 +173,13 @@ fun SettingsScreen(
             )
         }
 
-        // Trash Days Dialog
         if (showTrashDaysDialog) {
             AlertDialog(
                 onDismissRequest = { showTrashDaysDialog = false },
                 title = { Text("Auto-delete Period") },
                 text = {
                     Column {
-                        listOf(7, 14, 30, 60).forEach { days ->
+                        listOf(7, 14, 30, 60, 90).forEach { days ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -191,7 +191,7 @@ fun SettingsScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 RadioButton(
-                                    selected = state.trashAutoDeleteDays == days,
+                                    selected = uiState.trashAutoDeleteDays == days,
                                     onClick = {
                                         viewModel.setTrashAutoDelete(days)
                                         showTrashDaysDialog = false
@@ -218,9 +218,7 @@ fun SettingsSection(
     title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
@@ -248,7 +246,11 @@ fun SettingsOption(
     ) {
         Text(text)
         if (trailingIcon != null) {
-            Icon(trailingIcon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(
+                trailingIcon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

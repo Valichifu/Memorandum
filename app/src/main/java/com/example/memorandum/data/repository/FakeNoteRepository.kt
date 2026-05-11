@@ -93,11 +93,22 @@ class FakeNoteRepository : NoteRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun restoreNote(note: Note) {
-        TODO("Not yet implemented")
+    override suspend fun restoreNote(noteId: Int) {
+        _notes.update { notes ->
+            notes.map { note ->
+                if (note.id == noteId) note.copy(isDeleted = false, deletedAt = null)
+                else note
+            }
+        }
     }
 
-    override suspend fun permanentDeleteNote(note: Note) {
+    override suspend fun permanentDeleteNote(noteId: Int) {
+        _notes.update { notes ->
+            notes.filter { it.id != noteId }
+        }
+    }
+
+    override suspend fun emptyTrash() {
         TODO("Not yet implemented")
     }
 }

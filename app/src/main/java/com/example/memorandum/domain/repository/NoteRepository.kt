@@ -23,7 +23,9 @@ interface NoteRepository {
     fun getRootNotes(): Flow<List<Note>>
 
     fun getDeletedNotes(): Flow<List<Note>>
-    suspend fun restoreNote(note: Note)
-    suspend fun permanentDeleteNote(note: Note)
+    suspend fun restoreNote(noteId: Int)
+    suspend fun permanentDeleteNote(noteId: Int)
+    suspend fun emptyTrash()
+
 
 }

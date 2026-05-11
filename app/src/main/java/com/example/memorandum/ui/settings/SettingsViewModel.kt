@@ -2,49 +2,62 @@ package com.example.memorandum.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.memorandum.data.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class SettingsState(
-    val language: String = "English",
+data class SettingsUiState(
     val isDarkMode: Boolean = false,
     val isTileLayout: Boolean = false,
-    val trashAutoDeleteDays: Int = 30
+    val language: String = "English",
+    val trashAutoDeleteDays: Int = 30  // ✅ Câmpul există
 )
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor() : ViewModel() {
+class SettingsViewModel @Inject constructor(
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
 
-    private val _state = MutableStateFlow(SettingsState())
-    val state: StateFlow<SettingsState> = _state.asStateFlow()
-
-    fun updateLanguage(language: String) {
-        viewModelScope.launch {
-            _state.value = _state.value.copy(language = language)
-            // TODO: Save to DataStore
-        }
-    }
+    // ✅ FIX: Adaugă settingsRepository.trashAutoDeleteDays în combine
+    val uiState: StateFlow<SettingsUiState> = combine(
+        settingsRepository.isDarkMode,
+        settingsRepository.isTileLayout,
+        settingsRepository.language,
+        settingsRepository.trashAutoDeleteDays  // <--- ASTA LIPSEA!
+    ) { darkMode, tileLayout, language, trashDays ->  // <--- ȘI AICI (4 parametri)
+        SettingsUiState(darkMode, tileLayout, language, trashDays)  // <--- ȘI AICI (4 argumente)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SettingsUiState()
+    )
 
     fun toggleDarkMode() {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isDarkMode = !_state.value.isDarkMode)
-            // TODO: Save to DataStore
+            settingsRepository.setDarkMode(!uiState.value.isDarkMode)
         }
     }
 
-    fun toggleLayout(isTile: Boolean) {
+    fun setLayout(isTile: Boolean) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isTileLayout = isTile)
-            // TODO: Save to DataStore
+            settingsRepository.setLayout(isTile)
+        }
+    }
+
+    fun setLanguage(lang: String) {
+        viewModelScope.launch {
+            settingsRepository.setLanguage(lang)
         }
     }
 
     fun setTrashAutoDelete(days: Int) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(trashAutoDeleteDays = days)
-            // TODO: Save to DataStore
+            settingsRepository.setTrashAutoDeleteDays(days)
         }
     }
 }

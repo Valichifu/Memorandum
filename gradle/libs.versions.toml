@@ -19,6 +19,7 @@ datastore = "1.2.1"
 coroutines = "1.10.2"
 navigationRuntimeKtx = "2.9.8"
 hilt = "2.51.1"
+foundation = "1.11.1"
 
 [libraries]
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
@@ -54,6 +55,7 @@ androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navig
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.2.0" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

@@ -14,6 +14,7 @@ import com.example.memorandum.ui.folder.FolderListScreen
 import com.example.memorandum.ui.folder.FolderEditorScreen
 import com.example.memorandum.ui.settings.SettingsViewModel
 import com.example.memorandum.ui.trash.TrashScreen
+import com.example.memorandum.ui.trash.TrashViewModel
 
 sealed class Screen(val route: String) {
 
@@ -85,7 +86,7 @@ fun NavGraph(navController: NavHostController) {
                     navController.navigate(Screen.Trash.route)
                 },
                 onLayoutChange = { isTiles ->
-                    // TODO: Trimite către NoteListViewModel să schimbe layout-ul
+                    // TODO:
                 }
             )
         }
@@ -106,10 +107,17 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Trash.route) {
+            val viewModel: TrashViewModel = hiltViewModel()
+
             TrashScreen(
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() },
-                onRestoreNote = { /* TODO */ },
-                onDeletePermanent = { /* TODO */ }
+                onRestoreNote = { noteId ->
+                    viewModel.restoreNoteById(noteId)
+                },
+                onDeletePermanent = { noteId ->
+                    viewModel.permanentDeleteNoteById(noteId)
+                }
             )
         }
     }
