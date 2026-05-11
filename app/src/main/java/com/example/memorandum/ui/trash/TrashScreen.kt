@@ -1,4 +1,4 @@
-package com.example.memorandum.ui.settings
+package com.example.memorandum.ui.trash
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,15 +8,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun SettingsScreen(
+fun TrashScreen(
     onBack: () -> Unit,
-    onTrashClick: () -> Unit,
-    onLayoutChange: (Boolean) -> Unit
+    onRestoreNote: (Int) -> Unit,
+    onDeletePermanent: (Int) -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text("SettingsScreen - TODO")
+        Text("TrashScreen (Recent Delete) - TODO")
     }
 }

@@ -1,10 +1,19 @@
 package com.example.memorandum.data
 
-import com.example.memorandum.data.repository.FakeNoteRepository
+import android.content.Context
+import com.example.memorandum.data.local.FolderDao
+import com.example.memorandum.data.local.FolderMapper
+import com.example.memorandum.data.local.NoteDao
+import com.example.memorandum.data.local.NoteDatabase
+import com.example.memorandum.data.local.NoteMapper
+import com.example.memorandum.data.repository.FolderRepository
+import com.example.memorandum.data.repository.OfflineFolderRepository
+import com.example.memorandum.data.repository.OfflineNoteRepository
 import com.example.memorandum.domain.repository.NoteRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -14,7 +23,36 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNoteRepository(): NoteRepository {
-        return FakeNoteRepository()
+    fun provideNoteDatabase(@ApplicationContext context: Context): NoteDatabase {
+        return NoteDatabase.getDatabase(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNoteDao(database: NoteDatabase): NoteDao {
+        return database.noteDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNoteRepository(
+        noteDao: NoteDao,
+        noteMapper: NoteMapper
+    ): NoteRepository {
+        return OfflineNoteRepository(noteDao, noteMapper)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFolderDao(database: NoteDatabase): FolderDao {
+        return database.folderDao()
+    }
+    @Provides
+    @Singleton
+    fun provideFolderRepository(
+        folderDao: FolderDao,
+        folderMapper: FolderMapper
+    ): FolderRepository {
+        return OfflineFolderRepository(folderDao, folderMapper)
     }
 }

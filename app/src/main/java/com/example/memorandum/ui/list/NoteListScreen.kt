@@ -24,11 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.memorandum.ui.editor.NoteEditorViewModel
 
 @Composable
 fun NoteListScreen(
     onNoteClick: (String) -> Unit,
-    onAddNote: () -> Unit
+    onAddNote: () -> Unit,
+    onSettings: () -> Unit
 ) {
 
     Box(

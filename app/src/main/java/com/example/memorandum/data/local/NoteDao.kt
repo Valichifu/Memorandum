@@ -34,4 +34,12 @@ interface NoteDao {
 
     @Query("SELECT * FROM notes ORDER BY updatedAt DESC")
     fun getNotesSortedByUpdatedAt(): Flow<List<NoteEntity>>
+
+    @Query("SELECT * FROM notes WHERE title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%' ORDER BY createdAt DESC")
+    fun searchNotesSortedByCreatedAt(query: String): Flow<List<NoteEntity>>
+    @Query("SELECT * FROM notes WHERE folderId = :folderId ORDER BY createdAt DESC")
+    fun getNotesInFolder(folderId: Int): Flow<List<NoteEntity>>
+
+    @Query("SELECT * FROM notes WHERE folderId IS NULL ORDER BY createdAt DESC")
+    fun getRootNotes(): Flow<List<NoteEntity>>
 }

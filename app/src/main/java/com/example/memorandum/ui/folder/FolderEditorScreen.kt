@@ -1,4 +1,4 @@
-package com.example.memorandum.ui.settings
+package com.example.memorandum.ui.folder
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,15 +8,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun SettingsScreen(
-    onBack: () -> Unit,
-    onTrashClick: () -> Unit,
-    onLayoutChange: (Boolean) -> Unit
+fun FolderEditorScreen(
+    folderId: Int,
+    onBack: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text("SettingsScreen - TODO")
+        Text("FolderEditorScreen - TODO")
     }
 }
