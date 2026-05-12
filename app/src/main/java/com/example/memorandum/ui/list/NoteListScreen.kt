@@ -21,6 +21,7 @@ import com.example.memorandum.ui.components.NoteTileCard
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,17 +38,37 @@ fun NoteListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("NOTES", style = MaterialTheme.typography.titleLarge) },
-                actions = {
-                    IconButton(onClick = { showFilterSheet = true }) {
-                        Icon(Icons.Default.Sort, "Sortare")
-                    }
-                    IconButton(onClick = onSettings) {
-                        Icon(Icons.Default.Settings, "Setări")
-                    }
-                }
-            )
+            Surface(
+                shadowElevation = 3.dp,
+                tonalElevation = 1.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                TopAppBar(
+                    title = {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "NOTES",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { showFilterSheet = true }) {
+                            Icon(Icons.Default.Sort, contentDescription = "Sortare")
+                        }
+
+                        IconButton(onClick = onSettings) {
+                            Icon(Icons.Default.Settings, contentDescription = "Setari")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    )
+                )
+            }
         }
     ) { paddingValues ->
         Column(

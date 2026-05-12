@@ -84,7 +84,7 @@ fun NoteEditorScreen(
                         handleSave()
                         onBack()
                     }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Înapoi")
+                        Icon(Icons.Default.West, contentDescription = "Înapoi")
                     }
                 },
                 actions = {
