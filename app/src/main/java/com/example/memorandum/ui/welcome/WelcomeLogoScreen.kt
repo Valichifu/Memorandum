@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.ImageLoader
@@ -26,18 +28,19 @@ fun WelcomeLogoScreen(
 ) {
     val context = LocalContext.current
 
-    val imageLoader = ImageLoader.Builder(context)
-        .components {
-            if (SDK_INT >= 28) {
-                add(ImageDecoderDecoder.Factory())
-            } else {
-                add(GifDecoder.Factory())
+    val imageLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                if (SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
             }
-        }
-        .build()
-
+            .build()
+    }
     LaunchedEffect(Unit) {
-        delay(2000)
+        delay(2500)
         onAnimationComplete()
     }
 
@@ -53,12 +56,12 @@ fun WelcomeLogoScreen(
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(R.raw.welcome_logo)
+                    .data(R.raw.welcome_logo_nobg)
                     .build(),
                 contentDescription = "Memorandum Logo",
                 imageLoader = imageLoader,
                 modifier = Modifier
-                    .width(350.dp)
+                    .width(400.dp)
                     .padding(16.dp)
             )
 
