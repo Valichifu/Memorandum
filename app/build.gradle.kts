@@ -79,7 +79,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(libs.junit)
-
+    implementation("com.airbnb.android:lottie:6.4.0")
     testImplementation(libs.junit)
     implementation("com.airbnb.android:lottie-compose:6.4.0")
     androidTestImplementation(libs.androidx.junit)

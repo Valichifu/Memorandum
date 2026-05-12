@@ -1,5 +1,5 @@
 package com.example.memorandum
-import NavGraph
+//import NavGraph
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     androidx.compose.foundation.layout.Box(modifier = Modifier.padding(innerPadding)) {
-                        NavGraph(navController = navController)
+                        //NavGraph(navController = navController)
                     }
                 }
             }
