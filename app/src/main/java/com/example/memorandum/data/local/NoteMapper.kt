@@ -15,7 +15,9 @@ class NoteMapper @Inject constructor() {
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
             isFavorite = entity.isFavorite,
-            folderId = entity.folderId
+            folderId = entity.folderId,
+            isDeleted = entity.isDeleted,
+            deletedAt = entity.deletedAt
 
         )
     }
@@ -29,7 +31,10 @@ class NoteMapper @Inject constructor() {
             createdAt = domain.createdAt,
             updatedAt = domain.updatedAt,
             isFavorite = domain.isFavorite,
-            folderId = domain.folderId
+            folderId = domain.folderId,
+            isDeleted = domain.isDeleted,
+            deletedAt = domain.deletedAt
+
         )
     }
 }

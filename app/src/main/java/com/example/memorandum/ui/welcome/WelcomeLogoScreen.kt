@@ -1,78 +1,69 @@
 package com.example.memorandum.ui.welcome
 
-import androidx.compose.animation.core.*
+import android.os.Build.VERSION.SDK_INT
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
+import com.example.memorandum.R
 import kotlinx.coroutines.delay
 
 @Composable
 fun WelcomeLogoScreen(
     onAnimationComplete: () -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "scale")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = EaseInOut),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scale"
-    )
+    val context = LocalContext.current
+
+    val imageLoader = ImageLoader.Builder(context)
+        .components {
+            if (SDK_INT >= 28) {
+                add(ImageDecoderDecoder.Factory())
+            } else {
+                add(GifDecoder.Factory())
+            }
+        }
+        .build()
 
     LaunchedEffect(Unit) {
-        delay(3000)
+        delay(2000)
         onAnimationComplete()
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primaryContainer),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp)
+            verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Book,
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(R.raw.welcome_logo)
+                    .build(),
                 contentDescription = "Memorandum Logo",
+                imageLoader = imageLoader,
                 modifier = Modifier
-                    .size(120.dp)
-                    .scale(scale),
-                tint = MaterialTheme.colorScheme.primary
+                    .width(350.dp)
+                    .padding(16.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                text = "Memorandum",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Notele tale, organizate",
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

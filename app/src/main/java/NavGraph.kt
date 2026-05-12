@@ -9,13 +9,15 @@ import com.example.memorandum.ui.editor.NoteEditorScreen
 import com.example.memorandum.ui.list.NoteListScreen
 import com.example.memorandum.ui.list.NoteListViewModel
 import com.example.memorandum.ui.settings.SettingsScreen
-import com.example.memorandum.ui.GreetingScreen.GreetingScreen
+import com.example.memorandum.ui.settings.SettingsViewModel
+import com.example.memorandum.ui.welcome.WelcomeLogoScreen
 import com.example.memorandum.ui.folder.FolderListScreen
 import com.example.memorandum.ui.folder.FolderEditorScreen
 import com.example.memorandum.ui.trash.TrashScreen
+import com.example.memorandum.ui.trash.TrashViewModel
 
 sealed class Screen(val route: String) {
-    object Greeting : Screen("greeting")
+    object WelcomeLogo : Screen("welcome_logo")
     object NoteList : Screen("note_list")
     object NoteEditor : Screen("note_editor/{noteId}") {
         fun createRoute(noteId: String = "new") = "note_editor/$noteId"
@@ -32,16 +34,22 @@ sealed class Screen(val route: String) {
 fun NavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Greeting.route
+        startDestination = Screen.WelcomeLogo.route
     ) {
-
-        composable(Screen.Greeting.route) {
-            GreetingScreen(navController = navController)
+        composable(Screen.WelcomeLogo.route) {
+            WelcomeLogoScreen(
+                onAnimationComplete = {
+                    navController.navigate(Screen.NoteList.route) {
+                        popUpTo(Screen.WelcomeLogo.route) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable(Screen.NoteList.route) {
             val viewModel: NoteListViewModel = hiltViewModel()
             NoteListScreen(
+                viewModel = viewModel,
                 onNoteClick = { id ->
                     navController.navigate(Screen.NoteEditor.createRoute(id.toString()))
                 },
@@ -53,6 +61,7 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
+
         composable(Screen.NoteEditor.route) { backStackEntry ->
             val noteIdStr = backStackEntry.arguments?.getString("noteId")
             val noteId = noteIdStr?.toIntOrNull() ?: -1
@@ -63,16 +72,19 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Settings.route) {
+            val viewModel: SettingsViewModel = hiltViewModel()
             SettingsScreen(
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() },
                 onTrashClick = {
                     navController.navigate(Screen.Trash.route)
                 },
                 onLayoutChange = { isTiles ->
-                    // TODO: (Rows vs Tiles)
+                    viewModel.setLayout(isTiles)
                 }
             )
         }
+
         composable(Screen.FolderList.route) {
             FolderListScreen(
                 onFolderClick = { id -> /* TODO */ },
@@ -90,10 +102,16 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Trash.route) {
+            val viewModel: TrashViewModel = hiltViewModel()
             TrashScreen(
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() },
-                onRestoreNote = { /* TODO */ },
-                onDeletePermanent = { /* TODO */ }
+                onRestoreNote = { noteId ->
+                    viewModel.restoreNoteById(noteId)
+                },
+                onDeletePermanent = { noteId ->
+                    viewModel.permanentDeleteNoteById(noteId)
+                }
             )
         }
     }
