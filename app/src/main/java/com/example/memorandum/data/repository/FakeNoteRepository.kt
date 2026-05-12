@@ -1,5 +1,7 @@
 package com.example.memorandum.data.repository
 
+import android.content.Context
+import android.net.Uri
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
@@ -87,5 +89,43 @@ class FakeNoteRepository : NoteRepository {
             notes.filter { it.folderId == null }
                 .sortedByDescending { it.createdAt }
         }
+    }
+
+    override fun getDeletedNotes(): Flow<List<Note>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun restoreNote(noteId: Int) {
+        _notes.update { notes ->
+            notes.map { note ->
+                if (note.id == noteId) note.copy(isDeleted = false, deletedAt = null)
+                else note
+            }
+        }
+    }
+
+    override suspend fun permanentDeleteNote(noteId: Int) {
+        _notes.update { notes ->
+            notes.filter { it.id != noteId }
+        }
+    }
+
+    override suspend fun emptyTrash() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun exportNoteToTxt(
+        context: Context,
+        noteId: Int,
+        uri: Uri
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun importNoteFromTxt(
+        context: Context,
+        uri: Uri
+    ): Int? {
+        TODO("Not yet implemented")
     }
 }

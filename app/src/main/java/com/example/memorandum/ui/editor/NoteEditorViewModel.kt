@@ -1,5 +1,7 @@
 package com.example.memorandum.ui.editor
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.memorandum.domain.model.Note
@@ -76,7 +78,7 @@ class NoteEditorViewModel @Inject constructor(
                         )
                     )
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
     }
@@ -86,7 +88,24 @@ class NoteEditorViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.deleteNote(currentNote)
-            } catch (e: Exception) {}
+            } catch (_: Exception) {}
+        }
+    }
+
+    suspend fun exportNote(context: Context, noteId: Int, uri: Uri): Boolean {
+        return try {
+            repository.exportNoteToTxt(context, noteId, uri)
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    suspend fun importNote(context: Context, uri: Uri): Int? {
+        return try {
+            repository.importNoteFromTxt(context, uri)
+        } catch (_: Exception) {
+            null
         }
     }
 }
+

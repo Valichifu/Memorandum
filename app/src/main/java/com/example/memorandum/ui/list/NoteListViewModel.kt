@@ -2,6 +2,7 @@ package com.example.memorandum.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.memorandum.data.repository.SettingsRepository
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.domain.repository.NoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +23,8 @@ enum class SortType { CREATED_AT_DESC, UPDATED_AT_DESC, ALPHABETICAL_ASC }
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class NoteListViewModel @Inject constructor(
-    private val repository: NoteRepository
+    private val repository: NoteRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NoteListUiState>(NoteListUiState.Loading)
@@ -34,6 +36,9 @@ class NoteListViewModel @Inject constructor(
 
     val currentSortType: StateFlow<SortType> = _sortType.asStateFlow()
     val selectedTag: StateFlow<String?> = _selectedTag.asStateFlow()
+
+    val isTileLayout: StateFlow<Boolean> = settingsRepository.isTileLayout
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     init {
         observeNotesWithSearch()
@@ -48,7 +53,8 @@ class NoteListViewModel @Inject constructor(
                 .flatMapLatest { (query, sort, tag) ->
                     if (tag != null) {
                         repository.getNotesByTag(tag).map { notes ->
-                            val filtered = if (query.isBlank()) notes else notes.filter {
+                            val activeNotes = notes.filter { !it.isDeleted }
+                            val filtered = if (query.isBlank()) activeNotes else activeNotes.filter {
                                 it.title.contains(query, ignoreCase = true) ||
                                         it.content.contains(query, ignoreCase = true)
                             }
@@ -58,25 +64,28 @@ class NoteListViewModel @Inject constructor(
                                 SortType.ALPHABETICAL_ASC -> filtered.sortedBy { it.title.lowercase() }
                             }
                         }
-                    }
-                    else {
+                    } else {
                         when {
                             query.isNotBlank() && sort == SortType.CREATED_AT_DESC -> {
                                 repository.searchNotesSortedByCreatedAt(query)
+                                    .map { it.filter { !it.isDeleted } }
                             }
                             query.isBlank() && sort == SortType.CREATED_AT_DESC -> {
                                 repository.getNotesSortedByCreatedAt()
+                                    .map { it.filter { !it.isDeleted } }
                             }
                             query.isBlank() && sort == SortType.UPDATED_AT_DESC -> {
                                 repository.getNotesSortedByUpdatedAt()
+                                    .map { it.filter { !it.isDeleted } }
                             }
                             else -> {
                                 val baseFlow = if (query.isBlank()) repository.getAllNotes() else repository.searchNotes(query)
                                 baseFlow.map { notes ->
+                                    val activeNotes = notes.filter { !it.isDeleted }
                                     when (sort) {
-                                        SortType.ALPHABETICAL_ASC -> notes.sortedBy { it.title.lowercase() }
-                                        SortType.UPDATED_AT_DESC -> notes.sortedByDescending { it.updatedAt }
-                                        else -> notes
+                                        SortType.ALPHABETICAL_ASC -> activeNotes.sortedBy { it.title.lowercase() }
+                                        SortType.UPDATED_AT_DESC -> activeNotes.sortedByDescending { it.updatedAt }
+                                        else -> activeNotes
                                     }
                                 }
                             }
@@ -97,7 +106,14 @@ class NoteListViewModel @Inject constructor(
 
     fun deleteNote(note: Note) {
         viewModelScope.launch {
-            try { repository.deleteNote(note) } catch (_: Exception) { }
+            try {
+                repository.updateNote(
+                    note.copy(
+                        isDeleted = true,
+                        deletedAt = System.currentTimeMillis()
+                    )
+                )
+            } catch (_: Exception) { }
         }
     }
 

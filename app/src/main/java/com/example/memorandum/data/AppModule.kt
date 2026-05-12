@@ -9,6 +9,7 @@ import com.example.memorandum.data.local.NoteMapper
 import com.example.memorandum.data.repository.FolderRepository
 import com.example.memorandum.data.repository.OfflineFolderRepository
 import com.example.memorandum.data.repository.OfflineNoteRepository
+import com.example.memorandum.data.repository.SettingsRepository
 import com.example.memorandum.domain.repository.NoteRepository
 import dagger.Module
 import dagger.Provides
@@ -54,5 +55,10 @@ object AppModule {
         folderMapper: FolderMapper
     ): FolderRepository {
         return OfflineFolderRepository(folderDao, folderMapper)
+    }
+    @Provides
+    @Singleton
+    fun provideSettingsRepository(@ApplicationContext context: Context): SettingsRepository {
+        return SettingsRepository(context)
     }
 }
