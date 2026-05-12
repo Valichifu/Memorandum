@@ -1,5 +1,6 @@
 package com.example.memorandum.ui.settings
 
+import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,7 +28,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Setări") },
+                title = { Text("Settings") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, "Înapoi")
@@ -67,6 +68,21 @@ fun SettingsScreen(
                             checked = uiState.isDarkMode,
                             onCheckedChange = { viewModel.toggleDarkMode() }
                         )
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Material You colors")
+                            Switch(
+                                checked = uiState.dynamicColor,
+                                onCheckedChange = { viewModel.toggleDynamicColor() }
+                            )
+                        }
                     }
                 }
             }

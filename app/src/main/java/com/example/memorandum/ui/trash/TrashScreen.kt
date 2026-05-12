@@ -41,7 +41,6 @@ fun TrashScreen(
                     }
                 },
                 actions = {
-                    // Buton "Restore all" dacă sunt note în coș
                     if ((uiState as? TrashUiState.Success)?.deletedNotes?.isNotEmpty() == true) {
                         IconButton(onClick = {
                             val notes = (uiState as TrashUiState.Success).deletedNotes
@@ -72,7 +71,7 @@ fun TrashScreen(
 
             is TrashUiState.Success -> {
                 if (state.deletedNotes.isEmpty()) {
-                    EmptyScreen(message = "Coșul este gol")
+                    EmptyScreen(message = "Trash screen")
                 } else {
                     LazyColumn(
                         modifier = Modifier.padding(paddingValues),
@@ -158,7 +157,7 @@ fun TrashNoteItem(
                 IconButton(onClick = onRestore) {
                     Icon(
                         Icons.Default.Restore,
-                        contentDescription = "Restaurează",
+                        contentDescription = "Restore",
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -172,10 +171,10 @@ fun TrashNoteItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Șters: ${note.deletedAt?.let {
+                    text = "Deleted: ${note.deletedAt?.let {
                         SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(it)
                     } ?: "Necunoscut"
-                    }}",
+                    }",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -190,7 +189,7 @@ fun TrashNoteItem(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(4.dp))
-                    Text("Șterge", style = MaterialTheme.typography.labelMedium)
+                    Text("Delete", style = MaterialTheme.typography.labelMedium)
                 }
             }
         }
