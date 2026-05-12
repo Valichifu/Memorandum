@@ -34,6 +34,7 @@ class NoteListViewModel @Inject constructor(
 
     val currentSortType: StateFlow<SortType> = _sortType.asStateFlow()
     val selectedTag: StateFlow<String?> = _selectedTag.asStateFlow()
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     init {
         observeNotesWithSearch()
