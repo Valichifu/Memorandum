@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.memorandum.data.repository.SettingsRepository
-import com.example.memorandum.ui.NavGraph
+import com.example.memorandum.ui.navigation.NavGraph
 import com.example.memorandum.ui.theme.MemorandumTheme
 import com.example.memorandum.utils.LocaleManager
 import dagger.hilt.android.AndroidEntryPoint

@@ -34,9 +34,6 @@ class NoteListViewModel @Inject constructor(
     private val _sortType = MutableStateFlow(SortType.CREATED_AT_DESC)
     private val _selectedTag = MutableStateFlow<String?>(null)
 
-    val currentSortType: StateFlow<SortType> = _sortType.asStateFlow()
-    val selectedTag: StateFlow<String?> = _selectedTag.asStateFlow()
-
     val isTileLayout: StateFlow<Boolean> = settingsRepository.isTileLayout
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
@@ -49,77 +46,41 @@ class NoteListViewModel @Inject constructor(
         viewModelScope.launch {
             combine(_searchQuery, _sortType, _selectedTag) { query, sort, tag -> Triple(query, sort, tag) }
                 .debounce(300L)
-                .distinctUntilChanged()
                 .flatMapLatest { (query, sort, tag) ->
-                    if (tag != null) {
-                        repository.getNotesByTag(tag).map { notes ->
-                            val activeNotes = notes.filter { !it.isDeleted }
-                            val filtered = if (query.isBlank()) activeNotes else activeNotes.filter {
-                                it.title.contains(query, ignoreCase = true) ||
-                                        it.content.contains(query, ignoreCase = true)
-                            }
-                            when (sort) {
-                                SortType.CREATED_AT_DESC -> filtered.sortedByDescending { it.createdAt }
-                                SortType.UPDATED_AT_DESC -> filtered.sortedByDescending { it.updatedAt }
-                                SortType.ALPHABETICAL_ASC -> filtered.sortedBy { it.title.lowercase() }
-                            }
+                    repository.getAllNotes().map { notes ->
+                        val activeNotes = notes.filter { !it.isDeleted }
+                        val filtered = if (query.isBlank()) activeNotes else activeNotes.filter {
+                            it.title.contains(query, ignoreCase = true)
                         }
-                    } else {
-                        when {
-                            query.isNotBlank() && sort == SortType.CREATED_AT_DESC -> {
-                                repository.searchNotesSortedByCreatedAt(query)
-                                    .map { it.filter { !it.isDeleted } }
-                            }
-                            query.isBlank() && sort == SortType.CREATED_AT_DESC -> {
-                                repository.getNotesSortedByCreatedAt()
-                                    .map { it.filter { !it.isDeleted } }
-                            }
-                            query.isBlank() && sort == SortType.UPDATED_AT_DESC -> {
-                                repository.getNotesSortedByUpdatedAt()
-                                    .map { it.filter { !it.isDeleted } }
-                            }
-                            else -> {
-                                val baseFlow = if (query.isBlank()) repository.getAllNotes() else repository.searchNotes(query)
-                                baseFlow.map { notes ->
-                                    val activeNotes = notes.filter { !it.isDeleted }
-                                    when (sort) {
-                                        SortType.ALPHABETICAL_ASC -> activeNotes.sortedBy { it.title.lowercase() }
-                                        SortType.UPDATED_AT_DESC -> activeNotes.sortedByDescending { it.updatedAt }
-                                        else -> activeNotes
-                                    }
-                                }
-                            }
-                        }
+                        NoteListUiState.Success(filtered)
                     }
                 }
-                .onStart { _uiState.value = NoteListUiState.Loading }
-                .catch { e -> _uiState.value = NoteListUiState.Error("Eroare: ${e.localizedMessage}") }
-                .collect { notes ->
-                    _uiState.value = NoteListUiState.Success(notes)
-                }
+                .collect { _uiState.value = it }
         }
     }
 
     fun onSearchQueryChanged(newQuery: String) { _searchQuery.value = newQuery }
-    fun sortBy(type: SortType) { _sortType.value = type }
-    fun selectTag(tag: String?) { _selectedTag.value = tag }
 
     fun deleteNote(note: Note) {
         viewModelScope.launch {
-            try {
-                repository.updateNote(
-                    note.copy(
-                        isDeleted = true,
-                        deletedAt = System.currentTimeMillis()
-                    )
-                )
-            } catch (_: Exception) { }
+            repository.updateNote(note.copy(isDeleted = true, deletedAt = System.currentTimeMillis()))
         }
     }
 
     fun toggleFavorite(note: Note) {
         viewModelScope.launch {
-            try { repository.updateNote(note.copy(isFavorite = !note.isFavorite)) } catch (_: Exception) { }
+            repository.updateNote(note.copy(isFavorite = !note.isFavorite))
+        }
+    }
+
+    // ACUM ESTE ÎN INTERIORUL CLASEI (Înainte de ultima acoladă)
+    fun renameNote(note: Note, newTitle: String) {
+        viewModelScope.launch {
+            try {
+                repository.updateNote(note.copy(title = newTitle))
+            } catch (e: Exception) {
+                _uiState.value = NoteListUiState.Error("Eroare la redenumire: ${e.localizedMessage}")
+            }
         }
     }
 }
