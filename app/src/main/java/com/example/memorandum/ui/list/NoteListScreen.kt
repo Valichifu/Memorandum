@@ -44,16 +44,19 @@ fun NoteListScreen(
                 color = MaterialTheme.colorScheme.surface
             ) {
                 TopAppBar(
-                    title = {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "NOTES",
-                                style = MaterialTheme.typography.titleLarge
+                    navigationIcon = {
+                        IconButton(onClick = { }) {
+                            Icon(
+                                imageVector = Icons.Default.FolderOpen,
+                                contentDescription = "Foldere"
                             )
                         }
+                    },
+                    title = {
+                        Text(
+                            text = "NOTES",
+                            style = MaterialTheme.typography.titleLarge
+                        )
                     },
                     actions = {
                         IconButton(onClick = { showFilterSheet = true }) {
