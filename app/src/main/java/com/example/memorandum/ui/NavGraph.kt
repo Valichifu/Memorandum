@@ -12,7 +12,9 @@ import com.example.memorandum.ui.settings.SettingsScreen
 import com.example.memorandum.ui.welcome.WelcomeLogoScreen
 import com.example.memorandum.ui.folder.FolderListScreen
 import com.example.memorandum.ui.folder.FolderEditorScreen
+import com.example.memorandum.ui.settings.SettingsViewModel
 import com.example.memorandum.ui.trash.TrashScreen
+import com.example.memorandum.ui.trash.TrashViewModel
 
 sealed class Screen(val route: String) {
 
@@ -52,7 +54,7 @@ fun NavGraph(navController: NavHostController) {
             val viewModel: NoteListViewModel = hiltViewModel()
 
             NoteListScreen(
-                //viewModel = viewModel,
+                viewModel = viewModel,
                 onNoteClick = { id ->
                     navController.navigate(Screen.NoteEditor.createRoute(id.toString()))
                 },
@@ -75,13 +77,16 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Settings.route) {
+            val viewModel: SettingsViewModel = hiltViewModel() // ✅ Adaugă ViewModel
+
             SettingsScreen(
+                viewModel = viewModel, // ✅ Pasează ViewModel
                 onBack = { navController.popBackStack() },
                 onTrashClick = {
                     navController.navigate(Screen.Trash.route)
                 },
                 onLayoutChange = { isTiles ->
-                    // TODO: (Rows vs Tiles)
+                    // TODO:
                 }
             )
         }
@@ -102,10 +107,17 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Trash.route) {
+            val viewModel: TrashViewModel = hiltViewModel()
+
             TrashScreen(
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() },
-                onRestoreNote = { /* TODO */ },
-                onDeletePermanent = { /* TODO */ }
+                onRestoreNote = { noteId ->
+                    viewModel.restoreNoteById(noteId)
+                },
+                onDeletePermanent = { noteId ->
+                    viewModel.permanentDeleteNoteById(noteId)
+                }
             )
         }
     }

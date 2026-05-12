@@ -13,5 +13,7 @@ data class NoteEntity(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val isFavorite: Boolean = false,
-    val folderId: Int? = null
+    val folderId: Int? = null,
+    val isDeleted: Boolean = false,
+    val deletedAt: Long? = null
 )
