@@ -15,11 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import com.example.memorandum.domain.model.Note
+import com.example.memorandum.ui.components.NoteTileCard
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.platform.LocalLocale
-import com.example.memorandum.ui.components.NoteTileCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +32,6 @@ fun NoteListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isTileLayout by viewModel.isTileLayout.collectAsState()
-    val currentSortType by viewModel.currentSortType.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var showFilterSheet by remember { mutableStateOf(false) }
 
@@ -48,66 +48,63 @@ fun NoteListScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
         }
     ) { paddingValues ->
-
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             when (val state = uiState) {
                 is NoteListUiState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
+                    Box(
+                        modifier = Modifier.fillMaxSize().weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) { CircularProgressIndicator() }
                 }
+
                 is NoteListUiState.Success -> {
                     if (state.notes.isEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(
-                                text = "Empty...",
-                                style = MaterialTheme.typography.displayMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        Box(
+                            modifier = Modifier.fillMaxSize().weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.Note, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Spacer(Modifier.height(16.dp))
+                                Text("Nu există note", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("Apasă pe + pentru a crea una nouă", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
                     } else {
                         if (isTileLayout) {
                             LazyVerticalGrid(
                                 columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .weight(1f),
+                                modifier = Modifier.fillMaxSize().weight(1f),
                                 contentPadding = PaddingValues(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 items(state.notes, key = { it.id }) { note ->
-                                    NoteTileCard(
-                                        note = note,
-                                        onClick = { onNoteClick(note.id) }
-                                    )
+                                    NoteTileCard(note = note, onClick = { onNoteClick(note.id) })
                                 }
                             }
                         } else {
                             LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .weight(1f),
+                                modifier = Modifier.fillMaxSize().weight(1f),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 if (state.notes.isNotEmpty()) {
                                     item {
                                         Text(
-                                            text = SimpleDateFormat("dd.MM.yyyy", LocalLocale.current.platformLocale)
-                                                .format(Date(state.notes.first().createdAt)),
+                                            text = SimpleDateFormat("dd.MM.yyyy", LocalLocale.current.platformLocale).format(Date(state.notes.first().createdAt)),
                                             style = MaterialTheme.typography.labelMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                         )
                                     }
                                 }
-
                                 items(state.notes, key = { it.id }) { note ->
                                     NoteItem(
                                         note = note,
@@ -122,7 +119,7 @@ fun NoteListScreen(
                 }
 
                 is NoteListUiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
                         Text(state.message, color = MaterialTheme.colorScheme.error)
                     }
                 }
@@ -131,7 +128,8 @@ fun NoteListScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .imePadding(), // ✅ Previne acoperirea de către tastatură
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -171,10 +169,8 @@ fun NoteListScreen(
         if (showFilterSheet) {
             ModalBottomSheet(onDismissRequest = { showFilterSheet = false }) {
                 Text("Sortează", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(16.dp))
-
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-                Text("Filtrează după tag", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(16.dp))
+                // TODO: Adaugă opțiuni reale de sortare/tag-uri
             }
         }
     }
