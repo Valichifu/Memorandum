@@ -23,30 +23,32 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject lateinit var settingsRepository: SettingsRepository
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
 
     override fun attachBaseContext(newBase: Context) {
         val language = newBase.getSharedPreferences("settings", Context.MODE_PRIVATE)
             .getString("language", "English") ?: "English"
 
         val context = LocaleManager.setLocale(newBase, language)
+
         super.attachBaseContext(context)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             val isDarkMode by settingsRepository.isDarkMode.collectAsState(initial = false)
 
             MemorandumTheme(darkTheme = isDarkMode) {
                 val navController = rememberNavController()
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)) {
+
+
                         NavGraph(navController = navController)
                     }
-                }
+
             }
         }
     }
-}
