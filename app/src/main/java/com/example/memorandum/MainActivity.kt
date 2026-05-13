@@ -41,8 +41,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val isDarkMode by settingsRepository.isDarkMode.collectAsState(initial = false)
+            val useDynamicColor by settingsRepository.dynamicColor.collectAsState(initial = true)
 
-            MemorandumTheme(darkTheme = isDarkMode) {
+            MemorandumTheme(
+                darkTheme = isDarkMode,
+                dynamicColor = useDynamicColor  ) {
                 val navController = rememberNavController()
 
 
