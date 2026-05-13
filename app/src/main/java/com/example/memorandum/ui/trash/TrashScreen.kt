@@ -33,25 +33,31 @@ fun TrashScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Coș de gunoi") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Înapoi")
-                    }
-                },
-                actions = {
-                    // Buton "Restore all" dacă sunt note în coș
-                    if ((uiState as? TrashUiState.Success)?.deletedNotes?.isNotEmpty() == true) {
-                        IconButton(onClick = {
-                            val notes = (uiState as TrashUiState.Success).deletedNotes
-                            viewModel.restoreAllNotes(notes)
-                        }) {
-                            Icon(Icons.Default.Restore, "Restaurează tot")
+            Surface(
+                shadowElevation = 3.dp,
+                tonalElevation = 1.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                TopAppBar(
+                    title = { Text("Coș de gunoi") },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.Default.ArrowBack, "Înapoi")
+                        }
+                    },
+                    actions = {
+                        // Buton "Restore all" dacă sunt note în coș
+                        if ((uiState as? TrashUiState.Success)?.deletedNotes?.isNotEmpty() == true) {
+                            IconButton(onClick = {
+                                val notes = (uiState as TrashUiState.Success).deletedNotes
+                                viewModel.restoreAllNotes(notes)
+                            }) {
+                                Icon(Icons.Default.Restore, "Restaurează tot")
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         },
         floatingActionButton = {
             if ((uiState as? TrashUiState.Success)?.deletedNotes?.isNotEmpty() == true) {

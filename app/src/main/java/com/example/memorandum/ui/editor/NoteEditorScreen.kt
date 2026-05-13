@@ -77,57 +77,89 @@ fun NoteEditorScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (noteId == -1) "Notă nouă" else "Editează") },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        handleSave()
-                        onBack()
-                    }) {
-                        Icon(Icons.Default.West, contentDescription = "Înapoi")
-                    }
-                },
-                actions = {
-                    Box {
-                        IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Meniu")
+            Surface(
+                shadowElevation = 3.dp,
+                tonalElevation = 1.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                TopAppBar(
+                    title = {
+                        Text(if (noteId == -1) "Notă nouă" else "Editează")
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            handleSave()
+                            onBack()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.West,
+                                contentDescription = "Inapoi"
+                            )
                         }
+                    },
+                    actions = {
+                        Box {
+                            IconButton(onClick = { showMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = "Meniu"
+                                )
+                            }
 
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Export as .txt") },
-                                leadingIcon = { Icon(Icons.Default.Upload, contentDescription = null) },
-                                onClick = {
-                                    showMenu = false
-                                    val currentNote = (uiState as? NoteEditorUiState.Success)?.note
-                                    currentNote?.let { note ->
-                                        val fileName = (note.title.ifBlank { "nota" }).take(20) + ".txt"
-                                        exportLauncher.launch(fileName)
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Export as .txt") },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Upload,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        val currentNote =
+                                            (uiState as? NoteEditorUiState.Success)?.note
+
+                                        currentNote?.let { note ->
+                                            val fileName =
+                                                (note.title.ifBlank { "nota" }).take(20) + ".txt"
+
+                                            exportLauncher.launch(fileName)
+                                        }
                                     }
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Import from .txt") },
-                                leadingIcon = { Icon(Icons.Default.Download, contentDescription = null) },
-                                onClick = {
-                                    showMenu = false
-                                    importLauncher.launch("text/*")
-                                }
+                                )
+
+                                DropdownMenuItem(
+                                    text = { Text("Import from .txt") },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Download,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        importLauncher.launch("text/*")
+                                    }
+                                )
+                            }
+                        }
+
+                        IconButton(onClick = {
+                            handleSave()
+                            onBack()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Salveaza"
                             )
                         }
                     }
-
-                    IconButton(onClick = {
-                        handleSave()
-                        onBack()
-                    }) {
-                        Icon(Icons.Default.Check, contentDescription = "Salvează")
-                    }
-                }
-            )
+                )
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
