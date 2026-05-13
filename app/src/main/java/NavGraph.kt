@@ -9,17 +9,15 @@ import com.example.memorandum.ui.editor.NoteEditorScreen
 import com.example.memorandum.ui.list.NoteListScreen
 import com.example.memorandum.ui.list.NoteListViewModel
 import com.example.memorandum.ui.settings.SettingsScreen
+import com.example.memorandum.ui.settings.SettingsViewModel
 import com.example.memorandum.ui.welcome.WelcomeLogoScreen
 import com.example.memorandum.ui.folder.FolderListScreen
 import com.example.memorandum.ui.folder.FolderEditorScreen
-import com.example.memorandum.ui.settings.SettingsViewModel
 import com.example.memorandum.ui.trash.TrashScreen
 import com.example.memorandum.ui.trash.TrashViewModel
 
 sealed class Screen(val route: String) {
-
     object WelcomeLogo : Screen("welcome_logo")
-
     object NoteList : Screen("note_list")
     object NoteEditor : Screen("note_editor/{noteId}") {
         fun createRoute(noteId: String = "new") = "note_editor/$noteId"
@@ -29,9 +27,7 @@ sealed class Screen(val route: String) {
         fun createRoute(folderId: String = "new") = "folder_editor/$folderId"
     }
     object Settings : Screen("settings")
-
     object Trash : Screen("trash")
-
 }
 
 @Composable
@@ -52,7 +48,6 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.NoteList.route) {
             val viewModel: NoteListViewModel = hiltViewModel()
-
             NoteListScreen(
                 viewModel = viewModel,
                 onNoteClick = { id ->
@@ -66,10 +61,10 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
+
         composable(Screen.NoteEditor.route) { backStackEntry ->
             val noteIdStr = backStackEntry.arguments?.getString("noteId")
             val noteId = noteIdStr?.toIntOrNull() ?: -1
-
             NoteEditorScreen(
                 noteId = noteId,
                 onBack = { navController.popBackStack() }
@@ -77,19 +72,19 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Settings.route) {
-            val viewModel: SettingsViewModel = hiltViewModel() // ✅ Adaugă ViewModel
-
+            val viewModel: SettingsViewModel = hiltViewModel()
             SettingsScreen(
-                viewModel = viewModel, // ✅ Pasează ViewModel
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() },
                 onTrashClick = {
                     navController.navigate(Screen.Trash.route)
                 },
                 onLayoutChange = { isTiles ->
-                    // TODO:
+                    viewModel.setLayout(isTiles)
                 }
             )
         }
+
         composable(Screen.FolderList.route) {
             FolderListScreen(
                 onFolderClick = { id -> /* TODO */ },
@@ -108,7 +103,6 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.Trash.route) {
             val viewModel: TrashViewModel = hiltViewModel()
-
             TrashScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },

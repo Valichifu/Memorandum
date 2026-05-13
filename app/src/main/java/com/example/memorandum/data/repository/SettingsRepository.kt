@@ -17,11 +17,13 @@ class SettingsRepository(context: Context) {
         val IS_TILE_LAYOUT = booleanPreferencesKey("is_tile_layout")
         val LANGUAGE = stringPreferencesKey("language")
         val TRASH_AUTO_DELETE_DAYS = intPreferencesKey("trash_auto_delete_days")
+
+        val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
     }
 
     val isDarkMode: Flow<Boolean> = dataStore.data
         .map { preferences ->
-            preferences[PreferencesKeys.DARK_MODE] ?: false // Default: false (Light)
+            preferences[PreferencesKeys.DARK_MODE] ?: false
         }
 
     suspend fun setDarkMode(enabled: Boolean) {
@@ -32,7 +34,7 @@ class SettingsRepository(context: Context) {
 
     val isTileLayout: Flow<Boolean> = dataStore.data
         .map { preferences ->
-            preferences[PreferencesKeys.IS_TILE_LAYOUT] ?: false // Default: false (Rows)
+            preferences[PreferencesKeys.IS_TILE_LAYOUT] ?: false
         }
 
     suspend fun setLayout(isTile: Boolean) {
@@ -59,6 +61,17 @@ class SettingsRepository(context: Context) {
     suspend fun setTrashAutoDeleteDays(days: Int) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.TRASH_AUTO_DELETE_DAYS] = days
+        }
+    }
+
+    val dynamicColor: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.DYNAMIC_COLOR] ?: true
+        }
+
+    suspend fun setDynamicColor(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DYNAMIC_COLOR] = enabled
         }
     }
 }
