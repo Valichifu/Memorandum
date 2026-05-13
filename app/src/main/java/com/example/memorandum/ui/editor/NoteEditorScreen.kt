@@ -1,5 +1,6 @@
 package com.example.memorandum.ui.editor
 
+import android.R
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -8,10 +9,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.memorandum.ui.components.ErrorScreen
 import com.example.memorandum.ui.components.LoadingScreen
@@ -184,6 +187,7 @@ fun NoteEditorScreen(
                         .padding(horizontal = 16.dp)
                 ) {
                     TextField(
+
                         value = title,
                         onValueChange = { title = it },
                         placeholder = { Text("Numele notei") },
@@ -197,20 +201,35 @@ fun NoteEditorScreen(
                         )
                     )
                     Spacer(Modifier.height(8.dp))
-                    TextField(
-                        value = content,
-                        onValueChange = { content = it },
-                        placeholder = { Text("Începe să scrii...") },
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
+                            .weight(1f)
+                    ) {
+                        TextField(
+                            value = content,
+                            onValueChange = { content = it },
+                            placeholder = { Text("Incepe sa scrii...") },
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(bottom = 28.dp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            )
                         )
-                    )
+
+                        Text(
+                            text = "${content.length}",
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(end = 12.dp, bottom = 8.dp),
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
             else -> {}

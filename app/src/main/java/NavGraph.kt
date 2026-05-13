@@ -28,6 +28,7 @@ sealed class Screen(val route: String) {
     }
     object Settings : Screen("settings")
     object Trash : Screen("trash")
+
 }
 
 @Composable
@@ -58,6 +59,9 @@ fun NavGraph(navController: NavHostController) {
                 },
                 onSettings = {
                     navController.navigate(Screen.Settings.route)
+                },
+                onFolderClick = {
+                    navController.navigate(Screen.FolderList.route)
                 }
             )
         }

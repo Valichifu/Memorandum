@@ -29,7 +29,8 @@ fun NoteListScreen(
     viewModel: NoteListViewModel,
     onNoteClick: (Int) -> Unit,
     onAddNote: () -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
+    onFolderClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isTileLayout by viewModel.isTileLayout.collectAsState()
@@ -45,7 +46,7 @@ fun NoteListScreen(
             ) {
                 TopAppBar(
                     navigationIcon = {
-                        IconButton(onClick = { }) {
+                        IconButton(onClick = onFolderClick) {
                             Icon(
                                 imageVector = Icons.Default.FolderOpen,
                                 contentDescription = "Foldere"
