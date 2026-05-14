@@ -49,10 +49,10 @@ class SettingsViewModel @Inject constructor(
             settingsRepository.setLayout(isTile)
         }
     }
-
-    fun setLanguage(lang: String) {
+    fun setLanguageAndRestart(lang: String, onRestart: () -> Unit) {
         viewModelScope.launch {
             settingsRepository.setLanguage(lang)
+            onRestart()
         }
     }
 
