@@ -150,3 +150,4 @@ fun FolderRowItem( // Nume schimbat pentru a evita conflictele (repară image_df
 }
 
 annotation class NoteListScreen
+//acesta este
