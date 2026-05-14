@@ -15,8 +15,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.memorandum.R
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.ui.components.NoteTileCard
 import java.text.SimpleDateFormat
@@ -34,12 +36,12 @@ fun NoteListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isTileLayout by viewModel.isTileLayout.collectAsState()
-
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
     val selectedNoteIds by viewModel.selectedNoteIds.collectAsState()
+    val currentSortType by viewModel.currentSortType.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
-    var showFilterSheet by remember { mutableStateOf(false) }
+    var showSortDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -51,16 +53,19 @@ fun NoteListScreen(
                 if (isSelectionMode) {
                     TopAppBar(
                         title = {
-                            Text("${selectedNoteIds.size} selected", style = MaterialTheme.typography.titleLarge)
+                            Text(
+                                stringResource(R.string.selected_count, selectedNoteIds.size),
+                                style = MaterialTheme.typography.titleLarge
+                            )
                         },
                         navigationIcon = {
                             IconButton(onClick = { viewModel.exitSelectionMode() }) {
-                                Icon(Icons.Default.Close, contentDescription = "Ieși din selecție")
+                                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
                             }
                         },
                         actions = {
                             IconButton(onClick = { viewModel.deleteSelectedNotes() }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Șterge selectate", tint = MaterialTheme.colorScheme.error)
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = MaterialTheme.colorScheme.error)
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -71,21 +76,18 @@ fun NoteListScreen(
                     TopAppBar(
                         navigationIcon = {
                             IconButton(onClick = onFolderClick) {
-                                Icon(
-                                    imageVector = Icons.Default.FolderOpen,
-                                    contentDescription = "Foldere"
-                                )
+                                Icon(imageVector = Icons.Default.FolderOpen, contentDescription = stringResource(R.string.folders))
                             }
                         },
                         title = {
-                            Text("NOTES", style = MaterialTheme.typography.titleLarge)
+                            Text(stringResource(R.string.notes_title), style = MaterialTheme.typography.titleLarge)
                         },
                         actions = {
-                            IconButton(onClick = { showFilterSheet = true }) {
-                                Icon(Icons.Default.Sort, contentDescription = "Sortare")
+                            IconButton(onClick = { showSortDialog = true }) {
+                                Icon(Icons.Default.Sort, contentDescription = stringResource(R.string.sort_by))
                             }
                             IconButton(onClick = onSettings) {
-                                Icon(Icons.Default.Settings, contentDescription = "Setări")
+                                Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings))
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -105,9 +107,7 @@ fun NoteListScreen(
             when (val state = uiState) {
                 is NoteListUiState.Loading -> {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
+                        modifier = Modifier.fillMaxSize().weight(1f),
                         contentAlignment = Alignment.Center
                     ) { CircularProgressIndicator() }
                 }
@@ -115,38 +115,21 @@ fun NoteListScreen(
                 is NoteListUiState.Success -> {
                     if (state.notes.isEmpty()) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .weight(1f),
+                            modifier = Modifier.fillMaxSize().weight(1f),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    Icons.Default.Note,
-                                    null,
-                                    Modifier.size(64.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Icon(Icons.Default.Note, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(16.dp))
-                                Text(
-                                    "Nu există note",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    "Apasă pe + pentru a crea una nouă",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Text(stringResource(R.string.no_notes_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.no_notes_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     } else {
                         if (isTileLayout) {
                             LazyVerticalGrid(
                                 columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .weight(1f),
+                                modifier = Modifier.fillMaxSize().weight(1f),
                                 contentPadding = PaddingValues(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -156,11 +139,8 @@ fun NoteListScreen(
                                         note = note,
                                         isSelected = selectedNoteIds.contains(note.id),
                                         onClick = {
-                                            if (isSelectionMode) {
-                                                viewModel.toggleNoteSelection(note.id)
-                                            } else {
-                                                onNoteClick(note.id)
-                                            }
+                                            if (isSelectionMode) viewModel.toggleNoteSelection(note.id)
+                                            else onNoteClick(note.id)
                                         },
                                         onLongClick = {
                                             viewModel.enterSelectionMode()
@@ -171,9 +151,7 @@ fun NoteListScreen(
                             }
                         } else {
                             LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .weight(1f),
+                                modifier = Modifier.fillMaxSize().weight(1f),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
@@ -211,9 +189,7 @@ fun NoteListScreen(
 
                 is NoteListUiState.Error -> {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
+                        modifier = Modifier.fillMaxSize().weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(state.message, color = MaterialTheme.colorScheme.error)
@@ -234,15 +210,15 @@ fun NoteListScreen(
                         searchQuery = it
                         viewModel.onSearchQueryChanged(it)
                     },
-                    placeholder = { Text("Search...") },
-                    leadingIcon = { Icon(Icons.Default.Search, "Caută") },
+                    placeholder = { Text(stringResource(R.string.search_placeholder)) },
+                    leadingIcon = { Icon(Icons.Default.Search, null) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = {
                                 searchQuery = ""
                                 viewModel.onSearchQueryChanged("")
                             }) {
-                                Icon(Icons.Default.Clear, "Șterge")
+                                Icon(Icons.Default.Clear, null)
                             }
                         }
                     },
@@ -256,20 +232,20 @@ fun NoteListScreen(
                     modifier = Modifier.size(56.dp),
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(Icons.Default.Add, "Adaugă", tint = MaterialTheme.colorScheme.onPrimary)
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_note), tint = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
 
-        if (showFilterSheet) {
-            ModalBottomSheet(onDismissRequest = { showFilterSheet = false }) {
-                Text(
-                    "Sortează",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(16.dp)
-                )
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
-            }
+        if (showSortDialog) {
+            SortDialog(
+                currentSortType = currentSortType,
+                onDismiss = { showSortDialog = false },
+                onSortSelected = { sortType ->
+                    viewModel.sortBy(sortType)
+                    showSortDialog = false
+                }
+            )
         }
     }
 }
@@ -290,26 +266,20 @@ fun NoteItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            ),
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
             else MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = note.title.ifBlank { "Name" },
+                text = note.title.ifBlank { stringResource(R.string.no_title) },
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -319,12 +289,9 @@ fun NoteItem(
             Box {
                 if (!isSelectionMode) {
                     IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, "Meniu")
+                        Icon(Icons.Default.MoreVert, null)
                     }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
+                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -332,46 +299,31 @@ fun NoteItem(
                                         imageVector = if (note.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
                                         contentDescription = null,
                                         modifier = Modifier.size(18.dp),
-                                        tint = if (note.isFavorite) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurface
+                                        tint = if (note.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(Modifier.width(8.dp))
-                                    Text(if (note.isFavorite) "Remove from favorites" else "Add to favorites")
+                                    Text(stringResource(if (note.isFavorite) R.string.remove_from_favorites else R.string.add_to_favorites))
                                 }
                             },
-                            onClick = {
-                                onToggleFavorite()
-                                showMenu = false
-                            }
+                            onClick = { onToggleFavorite(); showMenu = false }
                         )
                         DropdownMenuItem(
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.error
-                                    )
+                                    Icon(Icons.Default.Delete, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.error)
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                                 }
                             },
-                            onClick = {
-                                onDelete()
-                                showMenu = false
-                            }
+                            onClick = { onDelete(); showMenu = false }
                         )
                     }
                 } else {
                     Icon(
                         imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
                         contentDescription = null,
-                        tint = if (isSelected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .padding(2.dp)
+                        tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp).padding(2.dp)
                     )
                 }
             }
@@ -387,33 +339,16 @@ fun SortDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Sortează după") },
+        title = { Text(stringResource(R.string.sort_by)) },
         text = {
             Column {
-                SortOption(
-                    text = "Data creării (recente primele)",
-                    selected = currentSortType == SortType.CREATED_AT_DESC
-                ) {
-                    onSortSelected(SortType.CREATED_AT_DESC)
-                }
-                SortOption(
-                    text = "Data modificării (recente primele)",
-                    selected = currentSortType == SortType.UPDATED_AT_DESC
-                ) {
-                    onSortSelected(SortType.UPDATED_AT_DESC)
-                }
-                SortOption(
-                    text = "Alfabetic (A-Z)",
-                    selected = currentSortType == SortType.ALPHABETICAL_ASC
-                ) {
-                    onSortSelected(SortType.ALPHABETICAL_ASC)
-                }
+                SortOption(stringResource(R.string.sort_created_desc), currentSortType == SortType.CREATED_AT_DESC) { onSortSelected(SortType.CREATED_AT_DESC) }
+                SortOption(stringResource(R.string.sort_updated_desc), currentSortType == SortType.UPDATED_AT_DESC) { onSortSelected(SortType.UPDATED_AT_DESC) }
+                SortOption(stringResource(R.string.sort_alphabetical), currentSortType == SortType.ALPHABETICAL_ASC) { onSortSelected(SortType.ALPHABETICAL_ASC) }
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Închide")
-            }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
         }
     )
 }
@@ -430,15 +365,9 @@ fun SortOption(text: String, selected: Boolean, onClick: () -> Unit) {
         RadioButton(
             selected = selected,
             onClick = onClick,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary
-            )
+            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
         )
         Spacer(Modifier.width(12.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Text(text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
     }
 }
