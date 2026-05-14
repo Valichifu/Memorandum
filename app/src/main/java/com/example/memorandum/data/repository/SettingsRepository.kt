@@ -5,10 +5,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.*
+import androidx.core.content.edit
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-class SettingsRepository(context: Context) {
+class SettingsRepository(private val context: Context)  {
 
     private val dataStore = context.dataStore
 
@@ -52,6 +53,9 @@ class SettingsRepository(context: Context) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LANGUAGE] = lang
         }
+
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        prefs.edit { putString("language", lang) }
     }
     val trashAutoDeleteDays: Flow<Int> = dataStore.data
         .map { preferences ->

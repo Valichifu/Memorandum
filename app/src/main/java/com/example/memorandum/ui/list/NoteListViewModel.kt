@@ -41,6 +41,12 @@ class NoteListViewModel @Inject constructor(
     val isTileLayout: StateFlow<Boolean> = settingsRepository.isTileLayout
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    private val _selectedNoteIds = MutableStateFlow<Set<Int>>(emptySet())
+    val selectedNoteIds: StateFlow<Set<Int>> = _selectedNoteIds.asStateFlow()
+
+    private val _isSelectionMode = MutableStateFlow(false)
+    val isSelectionMode: StateFlow<Boolean> = _isSelectionMode.asStateFlow()
+
     init {
         observeNotesWithSearch()
     }
@@ -121,6 +127,67 @@ class NoteListViewModel @Inject constructor(
     fun toggleFavorite(note: Note) {
         viewModelScope.launch {
             try { repository.updateNote(note.copy(isFavorite = !note.isFavorite)) } catch (_: Exception) { }
+        }
+    }
+
+    fun toggleNoteSelection(noteId: Int) {
+        val currentSelection = _selectedNoteIds.value
+        _selectedNoteIds.value = if (noteId in currentSelection) {
+            currentSelection - noteId
+        } else {
+            currentSelection + noteId
+        }
+        if (_selectedNoteIds.value.isEmpty()) {
+            _isSelectionMode.value = false
+        }
+    }
+
+    fun enterSelectionMode() {
+        _isSelectionMode.value = true
+    }
+
+    fun exitSelectionMode() {
+        _isSelectionMode.value = false
+        _selectedNoteIds.value = emptySet()
+    }
+
+    fun selectAllNotes(notes: List<Note>) {
+        _selectedNoteIds.value = notes.map { it.id }.toSet()
+        _isSelectionMode.value = true
+    }
+
+    fun deleteSelectedNotes() {
+        viewModelScope.launch {
+            val selectedIds = _selectedNoteIds.value
+            selectedIds.forEach { id ->
+                try {
+                    val currentState = _uiState.value
+                    if (currentState is NoteListUiState.Success) {
+                        val note = currentState.notes.find { it.id == id }
+                        note?.let {
+                            repository.updateNote(
+                                it.copy(
+                                    isDeleted = true,
+                                    deletedAt = System.currentTimeMillis()
+                                )
+                            )
+                        }
+                    }
+                } catch (_: Exception) {
+                }
+            }
+            exitSelectionMode()
+        }
+    }
+
+    fun toggleFavoriteSelectedNotes(isFavorite: Boolean) {
+        viewModelScope.launch {
+            val selectedIds = _selectedNoteIds.value
+            selectedIds.forEach { id ->
+                try {
+                } catch (_: Exception) { }
+            }
+            exitSelectionMode()
         }
     }
 }
