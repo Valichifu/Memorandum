@@ -34,6 +34,33 @@
     <string name="delete">Delete</string>
 
     <string name="favorite">Favorite</string>
+    <string name="notes_title">NOTES</string>
+    <string name="no_notes_title">No notes</string>
+    <string name="no_notes_subtitle">Press + to create a new one</string>
+    <string name="search_placeholder">Search...</string>
+    <string name="sort_by">Sort by</string>
+    <string name="sort_created_desc">Created date (newest first)</string>
+    <string name="sort_updated_desc">Modified date (newest first)</string>
+    <string name="sort_alphabetical">Alphabetical (A-Z)</string>
+    <string name="close">Close</string>
+    <string name="add_note">Add note</string>
+    <string name="folders">Folders</string>
+    <string name="selected_count">%1$d selected</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="remove_from_favorites">Remove from favorites</string>
+
+    <string name="new_note">New note</string>
+    <string name="edit_note">Edit</string>
+    <string name="menu">Menu</string>
+    <string name="export_txt">Export as .txt</string>
+    <string name="import_txt">Import from .txt</string>
+    <string name="save">Save</string>
+    <string name="note_title_placeholder">Note name</string>
+    <string name="note_content_placeholder">Start writing...</string>
+    <string name="export_success">Export successful!</string>
+    <string name="export_error">Export failed</string>
+    <string name="import_success">Import successful! Note is open.</string>
+    <string name="import_error">Import failed</string>
 
 
 

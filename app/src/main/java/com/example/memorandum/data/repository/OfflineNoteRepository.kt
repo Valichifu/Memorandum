@@ -143,9 +143,26 @@ class OfflineNoteRepository @Inject constructor(
         return try {
             val text = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return null
 
-            val lines = text.lines().filter { it.isNotBlank() }
-            val title = lines.firstOrNull()?.replace("Title: ", "") ?: "Imported"
-            val content = lines.drop(1).joinToString("\n")
+            val lines = text.lines()
+
+            var title = "Notă importată"
+            var contentStartIndex = 0
+
+            if (lines.isNotEmpty() && lines[0].startsWith("Title:", ignoreCase = true)) {
+                title = lines[0].substringAfter("Title:").trim()
+                contentStartIndex = 1
+            }
+            if (contentStartIndex < lines.size && lines[contentStartIndex].startsWith("Date:", ignoreCase = true)) {
+                contentStartIndex++
+            }
+            if (contentStartIndex < lines.size && lines[contentStartIndex].isBlank()) {
+                contentStartIndex++
+            }
+            val content = if (contentStartIndex < lines.size) {
+                lines.drop(contentStartIndex).joinToString("\n").trim()
+            } else {
+                ""
+            }
 
             val newNote = Note(
                 id = 0,
@@ -153,13 +170,17 @@ class OfflineNoteRepository @Inject constructor(
                 content = content.trim(),
                 createdAt = System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis(),
-                isDeleted = false
+                isDeleted = false,
+                isFavorite = false,
+                folderId = null,
+                deletedAt = null,
+                tags = emptyList()
             )
 
             noteDao.createNote(noteMapper.toEntity(newNote))
 
-
             noteDao.getAllNotes().first().maxByOrNull { it.id }?.id
+
         } catch (e: Exception) {
             e.printStackTrace()
             null

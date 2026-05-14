@@ -11,10 +11,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.res.stringResource
 import com.example.memorandum.R
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.ui.components.EmptyScreen
@@ -34,24 +34,30 @@ fun TrashScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.trash)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
-                    }
-                },
-                actions = {
-                    if ((uiState as? TrashUiState.Success)?.deletedNotes?.isNotEmpty() == true) {
-                        IconButton(onClick = {
-                            val notes = (uiState as TrashUiState.Success).deletedNotes
-                            viewModel.restoreAllNotes(notes)
-                        }) {
-                            Icon(Icons.Default.Restore, stringResource(R.string.restore_all))
+            Surface(
+                shadowElevation = 3.dp,
+                tonalElevation = 1.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.trash)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        }
+                    },
+                    actions = {
+                        if ((uiState as? TrashUiState.Success)?.deletedNotes?.isNotEmpty() == true) {
+                            IconButton(onClick = {
+                                val notes = (uiState as TrashUiState.Success).deletedNotes
+                                viewModel.restoreAllNotes(notes)
+                            }) {
+                                Icon(Icons.Default.Restore, stringResource(R.string.restore_all))
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         },
         floatingActionButton = {
             if ((uiState as? TrashUiState.Success)?.deletedNotes?.isNotEmpty() == true) {
