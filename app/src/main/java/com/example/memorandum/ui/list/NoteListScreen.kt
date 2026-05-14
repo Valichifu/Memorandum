@@ -77,11 +77,14 @@ fun NoteListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .imePadding() // ← fix: mutat aici, search bar rămâne jos
         ) {
             when (val state = uiState) {
                 is NoteListUiState.Loading -> {
                     Box(
-                        modifier = Modifier.fillMaxSize().weight(1f),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
                         contentAlignment = Alignment.Center
                     ) { CircularProgressIndicator() }
                 }
@@ -89,21 +92,38 @@ fun NoteListScreen(
                 is NoteListUiState.Success -> {
                     if (state.notes.isEmpty()) {
                         Box(
-                            modifier = Modifier.fillMaxSize().weight(1f),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(Icons.Default.Note, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Icon(
+                                    Icons.Default.Note,
+                                    null,
+                                    Modifier.size(64.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                                 Spacer(Modifier.height(16.dp))
-                                Text("Nu există note", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("Apasă pe + pentru a crea una nouă", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    "Nu există note",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    "Apasă pe + pentru a crea una nouă",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     } else {
                         if (isTileLayout) {
                             LazyVerticalGrid(
                                 columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
-                                modifier = Modifier.fillMaxSize().weight(1f),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .weight(1f),
                                 contentPadding = PaddingValues(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -128,7 +148,9 @@ fun NoteListScreen(
                             }
                         } else {
                             LazyColumn(
-                                modifier = Modifier.fillMaxSize().weight(1f),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .weight(1f),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
@@ -165,7 +187,12 @@ fun NoteListScreen(
                 }
 
                 is NoteListUiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(state.message, color = MaterialTheme.colorScheme.error)
                     }
                 }
@@ -174,8 +201,7 @@ fun NoteListScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .imePadding(),
+                    .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -214,7 +240,11 @@ fun NoteListScreen(
 
         if (showFilterSheet) {
             ModalBottomSheet(onDismissRequest = { showFilterSheet = false }) {
-                Text("Sortează", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(16.dp))
+                Text(
+                    "Sortează",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(16.dp)
+                )
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
             }
         }
