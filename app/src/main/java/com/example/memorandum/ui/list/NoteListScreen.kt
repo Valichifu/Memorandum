@@ -170,7 +170,6 @@ fun NoteListScreen(
             ModalBottomSheet(onDismissRequest = { showFilterSheet = false }) {
                 Text("Sortează", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(16.dp))
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
-                // TODO: Adaugă opțiuni reale de sortare/tag-uri
             }
         }
     }

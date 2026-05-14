@@ -36,7 +36,7 @@ fun ErrorScreen(
 @Composable
 fun EmptyScreen(
     modifier: Modifier = Modifier,
-    message: String = "Nu există date"
+    message: String = "Nu există  date"
 
 ) {
     Box(

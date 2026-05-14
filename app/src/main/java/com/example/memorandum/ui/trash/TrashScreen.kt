@@ -34,10 +34,10 @@ fun TrashScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Coș de gunoi") },
+                title = { Text("Trashscreen") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Înapoi")
+                        Icon(Icons.Default.ArrowBack, "Back")
                     }
                 },
                 actions = {
@@ -46,7 +46,7 @@ fun TrashScreen(
                             val notes = (uiState as TrashUiState.Success).deletedNotes
                             viewModel.restoreAllNotes(notes)
                         }) {
-                            Icon(Icons.Default.Restore, "Restaurează tot")
+                            Icon(Icons.Default.Restore, "Restore all")
                         }
                     }
                 }
@@ -59,7 +59,7 @@ fun TrashScreen(
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.onErrorContainer
                 ) {
-                    Icon(Icons.Default.DeleteForever, "Golește coșul")
+                    Icon(Icons.Default.DeleteForever, "Clear trash")
                 }
             }
         }
@@ -93,8 +93,8 @@ fun TrashScreen(
         if (showConfirmEmpty) {
             AlertDialog(
                 onDismissRequest = { showConfirmEmpty = false },
-                title = { Text("Golește coșul?") },
-                text = { Text("Toate notele vor fi șterse permanent. Această acțiune nu poate fi anulată.") },
+                title = { Text("Clear trash?") },
+                text = { Text("All deleted notes will be permanently removed.") },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -104,12 +104,12 @@ fun TrashScreen(
                         },
                         colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                     ) {
-                        Text("Șterge tot")
+                        Text("Delete all")
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showConfirmEmpty = false }) {
-                        Text("Anulează")
+                        Text("Cancel")
                     }
                 }
             )
@@ -137,7 +137,7 @@ fun TrashNoteItem(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = note.title.ifBlank { "Fără titlu" },
+                        text = note.title.ifBlank { "No title" },
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -173,7 +173,7 @@ fun TrashNoteItem(
                 Text(
                     text = "Deleted: ${note.deletedAt?.let {
                         SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(it)
-                    } ?: "Necunoscut"
+                    } ?: "Unknown"
                     }",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
