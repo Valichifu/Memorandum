@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Memorandum</string>
+    <string name="settings">Setări</string>
+    <string name="back">Înapoi</string>
+    <string name="language">Limbă</string>
+    <string name="appearance">Aspect</string>
+    <string name="dark_mode">Mod Întunecat</string>
+    <string name="material_you_colors">Culori Material You</string>
+    <string name="recent_delete">Șterse Recent</string>
+    <string name="open_trash">Deschide Coșul</string>
+    <string name="auto_delete_after_days">Ștergere automată după %1$d zile</string>
+    <string name="layout">Aspect</string>
+    <string name="rows">Rânduri</string>
+    <string name="tiles">Tile-uri</string>
+    <string name="select_language">Selectează Limba</string>
+    <string name="cancel">Anulează</string>
+    <string name="auto_delete_period">Perioadă Ștergere Automată</string>
+    <string name="days">%1$d zile</string>
+</resources>

@@ -170,9 +170,10 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        viewModel.setLanguage(lang)
                                         showLanguageDialog = false
-                                        (context as? ComponentActivity)?.recreate()
+                                        viewModel.setLanguageAndRestart(lang) {
+                                            (context as? ComponentActivity)?.recreate()
+                                        }
                                     }
                                     .padding(vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -180,10 +181,9 @@ fun SettingsScreen(
                                 RadioButton(
                                     selected = uiState.language == lang,
                                     onClick = {
-                                        viewModel.setLanguage(lang)
-                                        showLanguageDialog = false
-                                        (context as? ComponentActivity)?.recreate()
-                                    }
+                                        viewModel.setLanguageAndRestart(lang) {
+                                            (context as? ComponentActivity)?.recreate()
+                                        }}
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 Text(lang)
