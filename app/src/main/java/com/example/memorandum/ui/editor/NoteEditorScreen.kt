@@ -39,6 +39,12 @@ fun NoteEditorScreen(
 
     var showMenu by remember { mutableStateOf(false) }
 
+    var showFormatBar by remember { mutableStateOf(false) }
+
+    var isBold by remember { mutableStateOf(false) }
+    var isItalic by remember { mutableStateOf(false) }
+    var isUnderline by remember { mutableStateOf(false) }
+
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/plain")
     ) { uri: Uri? ->
@@ -187,7 +193,6 @@ fun NoteEditorScreen(
                         .padding(horizontal = 16.dp)
                 ) {
                     TextField(
-
                         value = title,
                         onValueChange = { title = it },
                         placeholder = { Text("Numele notei") },
@@ -220,7 +225,6 @@ fun NoteEditorScreen(
                                 unfocusedIndicatorColor = Color.Transparent
                             )
                         )
-
                         Text(
                             text = "${content.length}",
                             modifier = Modifier
