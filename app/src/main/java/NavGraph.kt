@@ -24,7 +24,7 @@ sealed class Screen(val route: String) {
     }
     object FolderList : Screen("folder_list")
     object FolderEditor : Screen("folder_editor/{folderId}") {
-        fun createRoute(folderId: String = "new") = "folder_editor/$folderId"
+        /*fun createRoute(folderId: String = "new") = "folder_editor/$folderId" */
     }
     object Settings : Screen("settings")
     object Trash : Screen("trash")
@@ -87,7 +87,7 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.FolderList.route) {
             FolderListScreen(
-                onFolderClick = { id -> /* TODO */ },
+                onFolderClick = { /*id ->  TODO */ },
                 onAddFolder = { /* TODO */ },
                 onBack = { navController.popBackStack() }
             )
@@ -105,13 +105,7 @@ fun NavGraph(navController: NavHostController) {
             val viewModel: TrashViewModel = hiltViewModel()
             TrashScreen(
                 viewModel = viewModel,
-                onBack = { navController.popBackStack() },
-                onRestoreNote = { noteId ->
-                    viewModel.restoreNoteById(noteId)
-                },
-                onDeletePermanent = { noteId ->
-                    viewModel.permanentDeleteNoteById(noteId)
-                }
+                onBack = { navController.popBackStack() }
             )
         }
     }

@@ -1,6 +1,8 @@
 package com.example.memorandum.ui.list
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -15,14 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.PopupProperties
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.ui.components.NoteTileCard
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.platform.LocalLocale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun NoteListScreen(
     viewModel: NoteListViewModel,
@@ -32,22 +33,44 @@ fun NoteListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isTileLayout by viewModel.isTileLayout.collectAsState()
+
+    val isSelectionMode by viewModel.isSelectionMode.collectAsState()
+    val selectedNoteIds by viewModel.selectedNoteIds.collectAsState()
+
     var searchQuery by remember { mutableStateOf("") }
     var showFilterSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("NOTES", style = MaterialTheme.typography.titleLarge) },
-                actions = {
-                    IconButton(onClick = { showFilterSheet = true }) {
-                        Icon(Icons.Default.Sort, "Sortare")
+            if (isSelectionMode) {
+                TopAppBar(
+                    title = {
+                        Text("${selectedNoteIds.size} selected", style = MaterialTheme.typography.titleLarge)
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { viewModel.exitSelectionMode() }) {
+                            Icon(Icons.Default.Close, contentDescription = "Ieși din selecție")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { viewModel.deleteSelectedNotes() }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Șterge selectate", tint = MaterialTheme.colorScheme.error)
+                        }
                     }
-                    IconButton(onClick = onSettings) {
-                        Icon(Icons.Default.Settings, "Setări")
+                )
+            } else {
+                TopAppBar(
+                    title = { Text("NOTES", style = MaterialTheme.typography.titleLarge) },
+                    actions = {
+                        IconButton(onClick = { showFilterSheet = true }) {
+                            Icon(Icons.Default.Sort, contentDescription = "Sortare")
+                        }
+                        IconButton(onClick = onSettings) {
+                            Icon(Icons.Default.Settings, contentDescription = "Setări")
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -86,7 +109,21 @@ fun NoteListScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 items(state.notes, key = { it.id }) { note ->
-                                    NoteTileCard(note = note, onClick = { onNoteClick(note.id) })
+                                    NoteTileCard(
+                                        note = note,
+                                        isSelected = selectedNoteIds.contains(note.id),
+                                        onClick = {
+                                            if (isSelectionMode) {
+                                                viewModel.toggleNoteSelection(note.id)
+                                            } else {
+                                                onNoteClick(note.id)
+                                            }
+                                        },
+                                        onLongClick = {
+                                            viewModel.enterSelectionMode()
+                                            viewModel.toggleNoteSelection(note.id)
+                                        }
+                                    )
                                 }
                             }
                         } else {
@@ -108,7 +145,16 @@ fun NoteListScreen(
                                 items(state.notes, key = { it.id }) { note ->
                                     NoteItem(
                                         note = note,
-                                        onClick = { onNoteClick(note.id) },
+                                        isSelected = selectedNoteIds.contains(note.id),
+                                        isSelectionMode = isSelectionMode,
+                                        onClick = {
+                                            if (isSelectionMode) viewModel.toggleNoteSelection(note.id)
+                                            else onNoteClick(note.id)
+                                        },
+                                        onLongClick = {
+                                            viewModel.enterSelectionMode()
+                                            viewModel.toggleNoteSelection(note.id)
+                                        },
                                         onDelete = { viewModel.deleteNote(note) },
                                         onToggleFavorite = { viewModel.toggleFavorite(note) }
                                     )
@@ -129,7 +175,7 @@ fun NoteListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .imePadding(), // ✅ Previne acoperirea de către tastatură
+                    .imePadding(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -175,21 +221,32 @@ fun NoteListScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun NoteItem(
     note: Note,
     onClick: () -> Unit,
     onDelete: () -> Unit,
-    onToggleFavorite: () -> Unit
+    onToggleFavorite: () -> Unit,
+    onLongClick: () -> Unit = {},
+    isSelected: Boolean = false,
+    isSelectionMode: Boolean = false
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected)
+                MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier
@@ -207,50 +264,61 @@ fun NoteItem(
             )
 
             Box {
-                IconButton(onClick = { showMenu = true }) {
-                    Icon(Icons.Default.MoreVert, "Meniu")
-                }
-
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = if (note.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = if (note.isFavorite) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(if (note.isFavorite) "Remove from favorites" else "Add to favorites")
+                if (!isSelectionMode) {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, "Meniu")
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = if (note.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = if (note.isFavorite) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(if (note.isFavorite) "Remove from favorites" else "Add to favorites")
+                                }
+                            },
+                            onClick = {
+                                onToggleFavorite()
+                                showMenu = false
                             }
-                        },
-                        onClick = {
-                            onToggleFavorite()
-                            showMenu = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text("Delete", color = MaterialTheme.colorScheme.error)
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                                }
+                            },
+                            onClick = {
+                                onDelete()
+                                showMenu = false
                             }
-                        },
-                        onClick = {
-                            onDelete()
-                            showMenu = false
-                        },
+                        )
+                    }
+                } else {
+                    Icon(
+                        imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                        contentDescription = null,
+                        tint = if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(2.dp)
                     )
                 }
             }

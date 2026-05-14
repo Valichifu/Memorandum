@@ -20,11 +20,28 @@
     <string name="auto_delete_period">Auto-delete Period</string>
     <string name="days">%1$d days</string>
 
+    <string name="trash">Trash</string>
+    <string name="restore_all">Restore all</string>
+    <string name="clear_trash">Clear trash</string>
+    <string name="trash_empty_message">No notes in trash</string>
+    <string name="clear_trash_title">Clear trash?</string>
+    <string name="clear_trash_message">All deleted notes will be permanently removed.</string>
+    <string name="delete_all">Delete all</string>
+    <string name="no_title">No title</string>
+    <string name="restore">Restore</string>
+    <string name="deleted_date_label">Deleted:</string>
+    <string name="unknown_date">Unknown</string>
+    <string name="delete">Delete</string>
+
+    <string name="favorite">Favorite</string>
+
+
 
     <string name="lang_english" translatable="false">English</string>
     <string name="lang_romanian" translatable="false">Romanian</string>
     <string name="lang_ukrainian" translatable="false">Ukrainian</string>
     <string name="lang_spanish" translatable="false">Spanish</string>
     <string name="lang_portuguese" translatable="false">Portuguese</string>
+
 
 </resources>

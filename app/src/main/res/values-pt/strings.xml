@@ -17,4 +17,17 @@
     <string name="cancel">Cancelar</string>
     <string name="auto_delete_period">Período de Exclusão Automática</string>
     <string name="days">%1$d dias</string>
+    <string name="trash">Lixeira</string>
+    <string name="restore_all">Restaurar tudo</string>
+    <string name="clear_trash">Limpar lixeira</string>
+    <string name="trash_empty_message">Nenhuma nota na lixeira</string>
+    <string name="clear_trash_title">Limpar lixeira?</string>
+    <string name="clear_trash_message">Todas as notas excluídas serão removidas permanentemente.</string>
+    <string name="delete_all">Excluir tudo</string>
+    <string name="no_title">Sem título</string>
+    <string name="restore">Restaurar</string>
+    <string name="deleted_date_label">Excluído:</string>
+    <string name="unknown_date">Desconhecido</string>
+    <string name="delete">Excluir</string>
+    <string name="favorite">Favorito</string>
 </resources>

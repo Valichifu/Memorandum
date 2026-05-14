@@ -17,4 +17,17 @@
     <string name="cancel">Скасувати</string>
     <string name="auto_delete_period">Період автовидалення</string>
     <string name="days">%1$d днів</string>
+    <string name="trash">Кошик</string>
+    <string name="restore_all">Відновити все</string>
+    <string name="clear_trash">Очистити кошик</string>
+    <string name="trash_empty_message">Немає нотаток у кошику</string>
+    <string name="clear_trash_title">Очистити кошик?</string>
+    <string name="clear_trash_message">Всі видалені нотатки будуть остаточно видалені.</string>
+    <string name="delete_all">Видалити все</string>
+    <string name="no_title">Без назви</string>
+    <string name="restore">Відновитi</string>
+    <string name="deleted_date_label">Видалено:</string>
+    <string name="unknown_date">Невідома</string>
+    <string name="delete">Видалити</string>
+    <string name="favorite">Улюблене</string>
 </resources>

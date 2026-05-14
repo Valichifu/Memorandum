@@ -1,6 +1,5 @@
 package com.example.memorandum.ui.settings
 
-import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
 import com.example.memorandum.R
+import android.os.Build
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +39,10 @@ fun SettingsScreen(
                 title = { Text(text = stringResource(R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
                 }
             )
@@ -170,8 +173,8 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        showLanguageDialog = false
                                         viewModel.setLanguageAndRestart(lang) {
+                                            showLanguageDialog = false
                                             (context as? ComponentActivity)?.recreate()
                                         }
                                     }
@@ -182,8 +185,10 @@ fun SettingsScreen(
                                     selected = uiState.language == lang,
                                     onClick = {
                                         viewModel.setLanguageAndRestart(lang) {
+                                            showLanguageDialog = false
                                             (context as? ComponentActivity)?.recreate()
-                                        }}
+                                        }
+                                    }
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 Text(lang)
@@ -250,7 +255,7 @@ fun SettingsSection(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        Divider()
+        HorizontalDivider()
         Spacer(Modifier.height(8.dp))
         content()
     }

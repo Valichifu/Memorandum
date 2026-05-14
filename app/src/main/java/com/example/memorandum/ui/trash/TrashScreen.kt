@@ -1,11 +1,12 @@
 package com.example.memorandum.ui.trash
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.memorandum.R
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.ui.components.EmptyScreen
 import com.example.memorandum.ui.components.ErrorScreen
@@ -24,9 +27,7 @@ import java.util.Locale
 @Composable
 fun TrashScreen(
     viewModel: TrashViewModel = hiltViewModel(),
-    onBack: () -> Unit,
-    onRestoreNote: (Int) -> Unit,
-    onDeletePermanent: (Int) -> Unit
+    onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showConfirmEmpty by remember { mutableStateOf(false) }
@@ -34,10 +35,10 @@ fun TrashScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Trashscreen") },
+                title = { Text(stringResource(R.string.trash)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 actions = {
@@ -46,7 +47,7 @@ fun TrashScreen(
                             val notes = (uiState as TrashUiState.Success).deletedNotes
                             viewModel.restoreAllNotes(notes)
                         }) {
-                            Icon(Icons.Default.Restore, "Restore all")
+                            Icon(Icons.Default.Restore, stringResource(R.string.restore_all))
                         }
                     }
                 }
@@ -59,7 +60,7 @@ fun TrashScreen(
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.onErrorContainer
                 ) {
-                    Icon(Icons.Default.DeleteForever, "Clear trash")
+                    Icon(Icons.Default.DeleteForever, stringResource(R.string.clear_trash))
                 }
             }
         }
@@ -71,7 +72,7 @@ fun TrashScreen(
 
             is TrashUiState.Success -> {
                 if (state.deletedNotes.isEmpty()) {
-                    EmptyScreen(message = "Trash screen")
+                    EmptyScreen(message = stringResource(R.string.trash_empty_message))
                 } else {
                     LazyColumn(
                         modifier = Modifier.padding(paddingValues),
@@ -93,8 +94,8 @@ fun TrashScreen(
         if (showConfirmEmpty) {
             AlertDialog(
                 onDismissRequest = { showConfirmEmpty = false },
-                title = { Text("Clear trash?") },
-                text = { Text("All deleted notes will be permanently removed.") },
+                title = { Text(stringResource(R.string.clear_trash_title)) },
+                text = { Text(stringResource(R.string.clear_trash_message)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -104,12 +105,12 @@ fun TrashScreen(
                         },
                         colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                     ) {
-                        Text("Delete all")
+                        Text(stringResource(R.string.delete_all))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showConfirmEmpty = false }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             )
@@ -137,7 +138,7 @@ fun TrashNoteItem(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = note.title.ifBlank { "No title" },
+                        text = note.title.ifBlank { stringResource(R.string.no_title) },
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -157,7 +158,7 @@ fun TrashNoteItem(
                 IconButton(onClick = onRestore) {
                     Icon(
                         Icons.Default.Restore,
-                        contentDescription = "Restore",
+                        contentDescription = stringResource(R.string.restore),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -170,11 +171,12 @@ fun TrashNoteItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val dateText = note.deletedAt?.let {
+                    SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(it)
+                } ?: stringResource(R.string.unknown_date)
+
                 Text(
-                    text = "Deleted: ${note.deletedAt?.let {
-                        SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(it)
-                    } ?: "Unknown"
-                    }",
+                    text = "${stringResource(R.string.deleted_date_label)} $dateText",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -189,7 +191,7 @@ fun TrashNoteItem(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(4.dp))
-                    Text("Delete", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.delete), style = MaterialTheme.typography.labelMedium)
                 }
             }
         }
