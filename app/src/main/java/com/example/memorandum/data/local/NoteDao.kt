@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
+
 @Dao
 interface NoteDao {
 
@@ -56,4 +57,20 @@ interface NoteDao {
 
     @Query("DELETE FROM notes WHERE id = :noteId")
     suspend fun deleteNoteById(noteId: Int)
+
+    ////FTS4
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSearchNote(searchNote: NoteSearchEntity)
+
+    @Query("DELETE FROM notes_search WHERE rowid = :noteId")
+    suspend fun deleteSearchNote(noteId: Int)
+
+    // Search avansat  cu MATCH
+    @Query("""
+        SELECT notes.* FROM notes 
+        JOIN notes_search ON notes.id = notes_search.rowid 
+        WHERE notes_search MATCH :query AND notes.isDeleted = 0
+    """)
+    fun searchNotesFts(query: String): Flow<List<NoteEntity>>
 }
