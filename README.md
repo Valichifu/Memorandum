@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/eeb06998-10f1-4973-be9c-876b7bfae169
+
 # Memorandum
 
 A clean, offline-first Android note-taking app built with Jetpack Compose and Material 3. It's designed to be simple, fast, and completely private—no cloud syncing, no tracking, just your notes.
@@ -26,3 +30,5 @@ To test it out or contribute, just clone the repo and open it in Android Studio:
 
 ```bash
 git clone [https://github.com/Valichifu/Memorandum.git](https://github.com/Valichifu/Memorandum.git)
+
+5/15/2026 added video demo
