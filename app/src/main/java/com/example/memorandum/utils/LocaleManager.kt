@@ -8,10 +8,11 @@ object LocaleManager {
 
     fun setLocale(context: Context, language: String): Context {
         val locale = when (language) {
-            "Romanian" -> Locale.forLanguageTag("ro-RO")
-            "Ukrainian" -> Locale.forLanguageTag("uk-UA")
-            "Spanish" -> Locale.forLanguageTag("es-ES")
-            "Portuguese" -> Locale.forLanguageTag("pt-PT")
+            "Romanian", "Română" -> Locale.forLanguageTag("ro-RO")
+            "Ukrainian", "Українська" -> Locale.forLanguageTag("uk-UA")
+            "Spanish", "Español" -> Locale.forLanguageTag("es-ES")
+            "Portuguese", "Português" -> Locale.forLanguageTag("pt-PT")
+            "Russian", "Русский" -> Locale.forLanguageTag("ru-RU")
             else -> Locale.forLanguageTag("en-US")
         }
 
