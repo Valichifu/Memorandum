@@ -13,13 +13,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.memorandum.ui.components.ErrorScreen
 import com.example.memorandum.ui.components.LoadingScreen
 import kotlinx.coroutines.launch
-
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.font.FontStyle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteEditorScreen(
@@ -39,7 +45,7 @@ fun NoteEditorScreen(
 
     var showMenu by remember { mutableStateOf(false) }
 
-    var showFormatBar by remember { mutableStateOf(false) }
+    var showStyleWidget by remember { mutableStateOf(false) }
 
     var isBold by remember { mutableStateOf(false) }
     var isItalic by remember { mutableStateOf(false) }
@@ -108,13 +114,62 @@ fun NoteEditorScreen(
                     },
                     actions = {
                         Box {
+                            IconButton(onClick = { showStyleWidget = !showStyleWidget }) {
+                                Icon(
+                                    imageVector = Icons.Default.FormatBold,
+                                    contentDescription = "Stilare",
+                                    tint = if ( isBold || isItalic || isUnderline)
+                                MaterialTheme.colorScheme.primary
+                                    else
+                                MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            if (showStyleWidget) {
+                                Popup(
+                                    alignment = Alignment.TopEnd,
+                                    offset = IntOffset(x = 175, y = 120),
+                                    onDismissRequest = { showStyleWidget = false }
+                                ) {
+                                    Surface(
+                                        shape = RoundedCornerShape(22.dp),
+                                        tonalElevation = 6.dp,
+                                        shadowElevation = 10.dp,
+                                        color = MaterialTheme.colorScheme.surface
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(10.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            StyleButton(
+                                                text = "\uD835\uDDD5",
+                                                selected = isBold,
+                                                onClick = { isBold = !isBold }
+                                            )
+
+                                            StyleButton(
+                                                text = "U̲",
+                                                selected = isUnderline,
+                                                onClick = { isUnderline = !isUnderline }
+                                            )
+                                            StyleButton(
+                                                text = "\uD835\uDC70",
+                                                selected = isItalic,
+                                                onClick = { isItalic = !isItalic }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Box {
                             IconButton(onClick = { showMenu = true }) {
                                 Icon(
                                     imageVector = Icons.Default.MoreVert,
                                     contentDescription = "Meniu"
                                 )
                             }
-
                             DropdownMenu(
                                 expanded = showMenu,
                                 onDismissRequest = { showMenu = false }
@@ -195,9 +250,18 @@ fun NoteEditorScreen(
                     TextField(
                         value = title,
                         onValueChange = { title = it },
-                        placeholder = { Text("Numele notei") },
+                        placeholder = {
+                            Text(
+                                "Numele notei",
+                                fontSize = 26.sp,
+                                )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
+                        textStyle = TextStyle(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
@@ -218,11 +282,20 @@ fun NoteEditorScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(bottom = 28.dp),
+                            textStyle = TextStyle(
+                                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                                fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
+                                textDecoration = if (isUnderline)
+                                    TextDecoration.Underline
+                                else
+                                    TextDecoration.None
+                            ),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
+                                unfocusedIndicatorColor = Color.Transparent,
+
                             )
                         )
                         Text(
@@ -238,5 +311,31 @@ fun NoteEditorScreen(
             }
             else -> {}
         }
+    }
+}
+@Composable
+fun StyleButton(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(14.dp),
+        color = if (selected)
+            MaterialTheme.colorScheme.onPrimary
+        else
+            MaterialTheme.colorScheme.surfaceVariant,
+        shadowElevation = if (selected) 6.dp else 1.dp
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
+            color = if (selected)
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
