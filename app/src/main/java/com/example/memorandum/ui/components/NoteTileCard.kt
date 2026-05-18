@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ fun NoteTileCard(
     note: Note,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
+    onToggleFavorite: () -> Unit = {},
     isSelected: Boolean = false
 ) {
     Card(
@@ -36,22 +38,27 @@ fun NoteTileCard(
             else if (note.isFavorite) MaterialTheme.colorScheme.primaryContainer
             else MaterialTheme.colorScheme.surfaceVariant
         )
-
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            if (note.isFavorite) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(
+                    onClick = onToggleFavorite,
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = stringResource(R.string.favorite),
-                        tint = MaterialTheme.colorScheme.primary,
+                        imageVector = if (note.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = if (note.isFavorite)
+                            stringResource(R.string.remove_from_favorites)
+                        else
+                            stringResource(R.string.add_to_favorites),
+                        tint = if (note.isFavorite) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier.size(16.dp)
                     )
                 }
-                Spacer(Modifier.height(4.dp))
             }
 
             Text(
@@ -68,7 +75,8 @@ fun NoteTileCard(
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (note.isFavorite) MaterialTheme.colorScheme.onSurface
+                    else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

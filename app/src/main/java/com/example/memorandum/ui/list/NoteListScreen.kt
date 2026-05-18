@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Note
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
@@ -84,7 +86,7 @@ fun NoteListScreen(
                         },
                         actions = {
                             IconButton(onClick = { showSortDialog = true }) {
-                                Icon(Icons.Default.Sort, contentDescription = stringResource(R.string.sort_by))
+                                Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = stringResource(R.string.sort_by))
                             }
                             IconButton(onClick = onSettings) {
                                 Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings))
@@ -119,7 +121,7 @@ fun NoteListScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(Icons.Default.Note, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Icon(Icons.AutoMirrored.Filled.Note, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(16.dp))
                                 Text(stringResource(R.string.no_notes_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(stringResource(R.string.no_notes_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -145,7 +147,8 @@ fun NoteListScreen(
                                         onLongClick = {
                                             viewModel.enterSelectionMode()
                                             viewModel.toggleNoteSelection(note.id)
-                                        }
+                                        },
+                                        onToggleFavorite = { viewModel.toggleFavorite(note) }
                                     )
                                 }
                             }
@@ -278,13 +281,25 @@ fun NoteItem(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = note.title.ifBlank { stringResource(R.string.no_title) },
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
-            )
+            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = note.title.ifBlank { stringResource(R.string.no_title) },
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+
+                if (note.isFavorite && !isSelectionMode) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = stringResource(R.string.favorite),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
 
             Box {
                 if (!isSelectionMode) {
@@ -342,7 +357,7 @@ fun SortDialog(
         title = { Text(stringResource(R.string.sort_by)) },
         text = {
             Column {
-                SortOption(stringResource(R.string.sort_created_desc), currentSortType == SortType.CREATED_AT_DESC) { onSortSelected(SortType.CREATED_AT_DESC) }
+                SortOption(stringResource(R.string. sort_created_desc), currentSortType == SortType.CREATED_AT_DESC) { onSortSelected(SortType.CREATED_AT_DESC) }
                 SortOption(stringResource(R.string.sort_updated_desc), currentSortType == SortType.UPDATED_AT_DESC) { onSortSelected(SortType.UPDATED_AT_DESC) }
                 SortOption(stringResource(R.string.sort_alphabetical), currentSortType == SortType.ALPHABETICAL_ASC) { onSortSelected(SortType.ALPHABETICAL_ASC) }
             }
