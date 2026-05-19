@@ -1,6 +1,5 @@
 package com.example.memorandum.ui.editor
 
-import android.R
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,11 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.memorandum.R
 import com.example.memorandum.ui.components.ErrorScreen
 import com.example.memorandum.ui.components.LoadingScreen
 import kotlinx.coroutines.launch
@@ -41,7 +42,6 @@ fun NoteEditorScreen(
 
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
-    var isInitialized by remember { mutableStateOf(false) }
 
     var showMenu by remember { mutableStateOf(false) }
 
@@ -51,6 +51,11 @@ fun NoteEditorScreen(
     var isItalic by remember { mutableStateOf(false) }
     var isUnderline by remember { mutableStateOf(false) }
 
+    val exportSuccessMsg = stringResource(R.string.export_success)
+    val exportErrorMsg = stringResource(R.string.export_error)
+    val importSuccessMsg = stringResource(R.string.import_success)
+    val importErrorMsg = stringResource(R.string.import_error)
+
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/plain")
     ) { uri: Uri? ->
@@ -59,9 +64,7 @@ fun NoteEditorScreen(
             currentNote?.let { note ->
                 scope.launch {
                     val success = viewModel.exportNote(context, note.id, targetUri)
-                    snackbarHostState.showSnackbar(
-                        if (success) "Export reușit!" else "Eroare la export"
-                    )
+                    snackbarHostState.showSnackbar(if (success) exportSuccessMsg else exportErrorMsg)
                 }
             }
         }
@@ -73,12 +76,11 @@ fun NoteEditorScreen(
         uri?.let { sourceUri ->
             scope.launch {
                 val newId = viewModel.importNote(context, sourceUri)
-
                 if (newId != null) {
                     viewModel.loadNote(newId)
-                    snackbarHostState.showSnackbar("Import reușit! Nota este deschisă.")
+                    snackbarHostState.showSnackbar(importSuccessMsg)
                 } else {
-                    snackbarHostState.showSnackbar("Eroare la import")
+                    snackbarHostState.showSnackbar(importErrorMsg)
                 }
             }
         }
@@ -107,7 +109,7 @@ fun NoteEditorScreen(
             ) {
                 TopAppBar(
                     title = {
-                        Text(if (noteId == -1) "Notă nouă" else "Editează")
+                        Text(stringResource(if (noteId == -1) R.string.new_note else R.string.edit_note))
                     },
                     navigationIcon = {
                         IconButton(onClick = {
@@ -116,7 +118,7 @@ fun NoteEditorScreen(
                         }) {
                             Icon(
                                 imageVector = Icons.Default.West,
-                                contentDescription = "Inapoi"
+                                contentDescription = stringResource(R.string.back)
                             )
                         }
                     },
@@ -126,10 +128,10 @@ fun NoteEditorScreen(
                                 Icon(
                                     imageVector = Icons.Default.FormatBold,
                                     contentDescription = "Stilare",
-                                    tint = if ( isBold || isItalic || isUnderline)
-                                MaterialTheme.colorScheme.primary
+                                    tint = if (isBold || isItalic || isUnderline)
+                                        MaterialTheme.colorScheme.primary
                                     else
-                                MaterialTheme.colorScheme.onSurface
+                                        MaterialTheme.colorScheme.onSurface
                                 )
                             }
 
@@ -175,7 +177,7 @@ fun NoteEditorScreen(
                             IconButton(onClick = { showMenu = true }) {
                                 Icon(
                                     imageVector = Icons.Default.MoreVert,
-                                    contentDescription = "Meniu"
+                                    contentDescription = stringResource(R.string.menu)
                                 )
                             }
                             DropdownMenu(
@@ -183,10 +185,10 @@ fun NoteEditorScreen(
                                 onDismissRequest = { showMenu = false }
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Export as .txt") },
+                                    text = { Text(stringResource(R.string.export_txt)) },
                                     leadingIcon = {
                                         Icon(
-                                            imageVector = Icons.Default.Upload,
+                                            Icons.Default.Upload,
                                             contentDescription = null
                                         )
                                     },
@@ -194,21 +196,18 @@ fun NoteEditorScreen(
                                         showMenu = false
                                         val currentNote =
                                             (uiState as? NoteEditorUiState.Success)?.note
-
                                         currentNote?.let { note ->
                                             val fileName =
                                                 (note.title.ifBlank { "nota" }).take(20) + ".txt"
-
                                             exportLauncher.launch(fileName)
                                         }
                                     }
                                 )
-
                                 DropdownMenuItem(
-                                    text = { Text("Import from .txt") },
+                                    text = { Text(stringResource(R.string.import_txt)) },
                                     leadingIcon = {
                                         Icon(
-                                            imageVector = Icons.Default.Download,
+                                            Icons.Default.Download,
                                             contentDescription = null
                                         )
                                     },
@@ -226,7 +225,7 @@ fun NoteEditorScreen(
                         }) {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = "Salveaza"
+                                contentDescription = stringResource(R.string.save)
                             )
                         }
                     }
@@ -244,96 +243,93 @@ fun NoteEditorScreen(
                 }
 
                 LaunchedEffect(key1 = state.note?.id) {
-                    title = state.note?.title ?: ""
+                        title = state.note?.title ?: ""
 
-                    val savedContent = state.note?.content ?: ""
+                        val savedContent = state.note?.content ?: ""
 
-                    isBold = savedContent.contains("[bold=true]")
-                    isItalic = savedContent.contains("[italic=true]")
-                    isUnderline = savedContent.contains("[underline=true]")
+                        isBold = savedContent.contains("[bold=true]")
+                        isItalic = savedContent.contains("[italic=true]")
+                        isUnderline = savedContent.contains("[underline=true]")
 
-                    content = savedContent
-                        .replace("[bold=true]", "")
-                        .replace("[bold=false]", "")
-                        .replace("[italic=true]", "")
-                        .replace("[italic=false]", "")
-                        .replace("[underline=true]", "")
-                        .replace("[underline=false]", "")
-                        .trim()
-                }
+                        content = savedContent
+                            .replace("[bold=true]", "")
+                            .replace("[bold=false]", "")
+                            .replace("[italic=true]", "")
+                            .replace("[italic=false]", "")
+                            .replace("[underline=true]", "")
+                            .replace("[underline=false]", "")
+                            .trim()
+                        content = state.note?.content ?: ""
+                    }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp)
-                ) {
-                    TextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        placeholder = {
-                            Text(
-                                "Numele notei",
-                                fontSize = 26.sp,
-                                )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Box(
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .padding(horizontal = 16.dp)
                     ) {
                         TextField(
-                            value = content,
-                            onValueChange = { content = it },
-                            placeholder = { Text("Incepe sa scrii...") },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(bottom = 28.dp),
+                            value = title,
+                            onValueChange = { title = it },
+                            placeholder = { Text(stringResource(R.string.note_title_placeholder)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
                             textStyle = TextStyle(
-                                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                                fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
-                                textDecoration = if (isUnderline)
-                                    TextDecoration.Underline
-                                else
-                                    TextDecoration.None
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Bold
                             ),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-
+                                unfocusedIndicatorColor = Color.Transparent
                             )
                         )
-                        Text(
-                            text = "${content.length}",
+                        Spacer(Modifier.height(8.dp))
+                        Box(
                             modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(end = 12.dp, bottom = 8.dp),
-                            color = Color.Gray,
-                            fontSize = 12.sp
-                        )
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            TextField(
+                                value = content,
+                                onValueChange = { content = it },
+                                placeholder = { Text(stringResource(R.string.note_content_placeholder)) },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(bottom = 28.dp),
+                                textStyle = TextStyle(
+                                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                                    fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
+                                    textDecoration = if (isUnderline)
+                                        TextDecoration.Underline
+                                    else
+                                        TextDecoration.None
+                                ),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+
+                                    )
+                            )
+                            Text(
+                                text = "${content.length}",
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(end = 12.dp, bottom = 8.dp),
+                                color = Color.Gray,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
-            }
             else -> {}
         }
     }
 }
+
 @Composable
 fun StyleButton(
     text: String,
@@ -360,3 +356,4 @@ fun StyleButton(
         )
     }
 }
+
