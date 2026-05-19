@@ -2,9 +2,9 @@ package com.example.memorandum.data.repository
 
 import android.content.Context
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
 import com.example.memorandum.data.local.NoteDao
 import com.example.memorandum.data.local.NoteMapper
+import com.example.memorandum.data.local.NoteSearchEntity
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
@@ -12,9 +12,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import java.io.FileWriter
-import java.text.SimpleDateFormat
-import java.util.*
 
 class OfflineNoteRepository @Inject constructor(
     private val noteDao: NoteDao,
@@ -34,20 +31,42 @@ class OfflineNoteRepository @Inject constructor(
     }
 
     override suspend fun insertNote(note: Note) {
-        noteDao.createNote(noteMapper.toEntity(note))
+        val entity = noteMapper.toEntity(note)
+        noteDao.createNote(entity)
+
+        // Sincronizare cu @FTS
+        val savedNote = noteDao.getAllNotes().first().maxByOrNull { it.id }
+        savedNote?.let {
+            noteDao.insertSearchNote(
+                NoteSearchEntity(rowId = it.id, title = it.title, content = it.content)
+            )
+        }
     }
 
     override suspend fun updateNote(note: Note) {
-        noteDao.updateNote(noteMapper.toEntity(note))
+        val entity = noteMapper.toEntity(note)
+        noteDao.updateNote(entity)
+        // Обновляем поисковый индекс
+        noteDao.insertSearchNote(
+            NoteSearchEntity(rowId = entity.id, title = entity.title, content = entity.content)
+        )
     }
 
     override suspend fun deleteNote(note: Note) {
-        noteDao.deleteNote(noteMapper.toEntity(note))
+        val entity = noteMapper.toEntity(note)
+        noteDao.deleteNote(entity)
+
+        noteDao.deleteSearchNote(entity.id)
     }
 
     override fun searchNotes(query: String): Flow<List<Note>> {
-        return noteDao.searchNotes(query).map { entities ->
-            entities.map { noteMapper.toDomain(it) }
+        return if (query.isBlank()) {
+            getAllNotes()
+        } else {
+            // Folosim FTS
+            noteDao.searchNotesWithHighlight(query).map { entities ->
+                entities.map { noteMapper.toDomain(entity = it) }
+            }
         }
     }
 
@@ -100,15 +119,13 @@ class OfflineNoteRepository @Inject constructor(
     override suspend fun restoreNote(noteId: Int) {
         val noteEntity = noteDao.getNoteById(noteId).firstOrNull() ?: return
         noteDao.updateNote(
-            noteEntity.copy(
-                isDeleted = false,
-                deletedAt = null
-            )
+            noteEntity.copy(isDeleted = false, deletedAt = null)
         )
     }
 
     override suspend fun permanentDeleteNote(noteId: Int) {
         noteDao.deleteNoteById(noteId)
+        noteDao.deleteSearchNote(noteId)
     }
 
     override suspend fun emptyTrash() {
@@ -119,20 +136,9 @@ class OfflineNoteRepository @Inject constructor(
         return try {
             val noteEntity = noteDao.getNoteById(noteId).firstOrNull() ?: return false
             val note = noteMapper.toDomain(noteEntity)
-
-            val content = buildString {
-                appendLine("Title: ${note.title}")
-                appendLine("Date: ${note.createdAt}")
-                appendLine()
-                appendLine(note.content)
-            }
-
-            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                outputStream.write(content.toByteArray())
-            }
-
+            val content = "Title: ${note.title}\nDate: ${note.createdAt}\n\n${note.content}"
+            context.contentResolver.openOutputStream(uri)?.use { it.write(content.toByteArray()) }
             true
-
         } catch (e: Exception) {
             e.printStackTrace()
             false
@@ -142,28 +148,15 @@ class OfflineNoteRepository @Inject constructor(
     override suspend fun importNoteFromTxt(context: Context, uri: Uri): Int? {
         return try {
             val text = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return null
-
             val lines = text.lines().filter { it.isNotBlank() }
             val title = lines.firstOrNull()?.replace("Title: ", "") ?: "Imported"
             val content = lines.drop(1).joinToString("\n")
-
-            val newNote = Note(
-                id = 0,
-                title = title.trim(),
-                content = content.trim(),
-                createdAt = System.currentTimeMillis(),
-                updatedAt = System.currentTimeMillis(),
-                isDeleted = false
-            )
-
-            noteDao.createNote(noteMapper.toEntity(newNote))
-
-
+            val newNote = Note(id = 0, title = title.trim(), content = content.trim())
+            insertNote(newNote)
             noteDao.getAllNotes().first().maxByOrNull { it.id }?.id
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
     }
-
 }
