@@ -3,7 +3,6 @@ package com.example.memorandum.ui.folder
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -12,9 +11,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.memorandum.R
 import com.example.memorandum.domain.model.Folder
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,12 +33,12 @@ fun FolderListScreen(
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false; newFolderName = "" },
-            title = { Text("Folder nou") },
+            title = { Text(stringResource(R.string.folder_new)) },
             text = {
                 TextField(
                     value = newFolderName,
                     onValueChange = { newFolderName = it },
-                    placeholder = { Text("Nume folder...") },
+                    placeholder = { Text(stringResource(R.string.folder_new_placeholder)) },
                     singleLine = true
                 )
             },
@@ -50,11 +51,11 @@ fun FolderListScreen(
                             showAddDialog = false
                         }
                     }
-                ) { Text("Creează") }
+                ) { Text(stringResource(R.string.folder_create)) }
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false; newFolderName = "" }) {
-                    Text("Anulează")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -63,17 +64,17 @@ fun FolderListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Foldere") },
+                title = { Text(stringResource(R.string.folder_list_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Înapoi")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddDialog = true }) {
-                Icon(Icons.Default.CreateNewFolder, "Folder Nou")
+                Icon(Icons.Default.CreateNewFolder, stringResource(R.string.folder_new))
             }
         }
     ) { padding ->
@@ -101,12 +102,12 @@ fun FolderListScreen(
                             )
                             Spacer(Modifier.height(16.dp))
                             Text(
-                                "Nu ai niciun folder",
+                                stringResource(R.string.folder_empty_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                "Apasă + pentru a crea unul",
+                                stringResource(R.string.folder_empty_subtitle),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -154,7 +155,7 @@ fun FolderItem(
     if (showRenameDialog) {
         AlertDialog(
             onDismissRequest = { showRenameDialog = false },
-            title = { Text("Redenumește") },
+            title = { Text(stringResource(R.string.folder_rename)) },
             text = {
                 TextField(
                     value = currentName,
@@ -166,10 +167,10 @@ fun FolderItem(
                 TextButton(onClick = {
                     if (currentName.isNotBlank()) onRename(currentName)
                     showRenameDialog = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.folder_save_title)) }
             },
             dismissButton = {
-                TextButton(onClick = { showRenameDialog = false }) { Text("Anulează") }
+                TextButton(onClick = { showRenameDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -205,12 +206,12 @@ fun FolderItem(
                 }
                 DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                     DropdownMenuItem(
-                        text = { Text("Redenumește") },
+                        text = { Text(stringResource(R.string.folder_rename)) },
                         onClick = { showRenameDialog = true; showMenu = false },
                         leadingIcon = { Icon(Icons.Default.Edit, null) }
                     )
                     DropdownMenuItem(
-                        text = { Text("Șterge", color = MaterialTheme.colorScheme.error) },
+                        text = { Text(stringResource(R.string.folder_delete), color = MaterialTheme.colorScheme.error) },
                         onClick = { onDelete(); showMenu = false },
                         leadingIcon = {
                             Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error)

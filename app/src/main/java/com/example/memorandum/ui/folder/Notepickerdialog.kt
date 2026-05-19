@@ -11,8 +11,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.memorandum.R
 import com.example.memorandum.domain.model.Note
 
 @Composable
@@ -25,19 +27,17 @@ fun NotePickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Adaugă note în folder") },
+        title = { Text(stringResource(R.string.picker_title)) },
         text = {
             if (notes.isEmpty()) {
                 Text(
-                    "Nu există note disponibile.\nToate notele sunt deja în foldere.",
+                    stringResource(R.string.picker_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 400.dp)
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)
                 ) {
                     items(notes, key = { it.id }) { note ->
                         val isSelected = selected.contains(note.id)
@@ -58,7 +58,7 @@ fun NotePickerDialog(
                             )
                             Spacer(Modifier.width(12.dp))
                             Text(
-                                text = note.title.ifBlank { "(fără titlu)" },
+                                text = note.title.ifBlank { stringResource(R.string.picker_no_title) },
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -74,11 +74,11 @@ fun NotePickerDialog(
                 onClick = { onConfirm(selected) },
                 enabled = selected.isNotEmpty()
             ) {
-                Text("Adaugă (${selected.size})")
+                Text(stringResource(R.string.picker_confirm, selected.size))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Anulează") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.picker_cancel)) }
         }
     )
 }

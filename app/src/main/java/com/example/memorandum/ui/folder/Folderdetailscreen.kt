@@ -15,9 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.memorandum.R
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.ui.components.NoteTileCard
 
@@ -29,9 +32,7 @@ fun FolderDetailScreen(
     onBack: () -> Unit,
     viewModel: FolderDetailViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(folderId) {
-        viewModel.loadFolder(folderId)
-    }
+    LaunchedEffect(folderId) { viewModel.loadFolder(folderId) }
 
     val uiState by viewModel.uiState.collectAsState()
     val isTileLayout by viewModel.isTileLayout.collectAsState()
@@ -47,11 +48,8 @@ fun FolderDetailScreen(
     val folder = (uiState as? FolderDetailUiState.Success)?.folder
 
     LaunchedEffect(folder) {
-        if (folder != null && titleDraft.isEmpty()) {
-            titleDraft = folder.name
-        }
+        if (folder != null && titleDraft.isEmpty()) titleDraft = folder.name
     }
-
     LaunchedEffect(isEditingTitle) {
         if (isEditingTitle) focusRequester.requestFocus()
     }
@@ -60,10 +58,7 @@ fun FolderDetailScreen(
         val allNotes by viewModel.allUnassignedNotes.collectAsState()
         NotePickerDialog(
             notes = allNotes,
-            onConfirm = { selectedIds ->
-                viewModel.addNotesToFolder(selectedIds, folderId)
-                showNotePicker = false
-            },
+            onConfirm = { ids -> viewModel.addNotesToFolder(ids, folderId); showNotePicker = false },
             onDismiss = { showNotePicker = false }
         )
     }
@@ -72,10 +67,10 @@ fun FolderDetailScreen(
         topBar = {
             if (isSelectionMode) {
                 TopAppBar(
-                    title = { Text("${selectedNoteIds.size} selectate") },
+                    title = { Text(stringResource(R.string.folder_selected_count, selectedNoteIds.size)) },
                     navigationIcon = {
                         IconButton(onClick = { viewModel.exitSelectionMode() }) {
-                            Icon(Icons.Default.Close, contentDescription = "Anulselecție")
+                            Icon(Icons.Default.Close, stringResource(R.string.folder_exit_selection))
                         }
                     },
                     actions = {
@@ -83,12 +78,10 @@ fun FolderDetailScreen(
                             viewModel.removeNotesFromFolder(selectedNoteIds)
                             viewModel.exitSelectionMode()
                         }) {
-                            Icon(Icons.Default.FolderOff, contentDescription = "Scoate din folder")
+                            Icon(Icons.Default.FolderOff, stringResource(R.string.folder_remove_selected))
                         }
-                        IconButton(onClick = {
-                            viewModel.deleteSelectedNotes()
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Șterge", tint = MaterialTheme.colorScheme.error)
+                        IconButton(onClick = { viewModel.deleteSelectedNotes() }) {
+                            Icon(Icons.Default.Delete, stringResource(R.string.folder_delete_selected), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 )
@@ -99,51 +92,45 @@ fun FolderDetailScreen(
                             TextField(
                                 value = titleDraft,
                                 onValueChange = { titleDraft = it },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .focusRequester(focusRequester),
+                                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                                 singleLine = true,
                                 colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-                                    unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
                                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent
+                                    unfocusedIndicatorColor = Color.Transparent
                                 )
                             )
                         } else {
                             Text(
-                                text = folder?.name ?: "Folder",
+                                text = folder?.name ?: stringResource(R.string.folders),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.combinedClickable(
-                                    onClick = {
-                                        titleDraft = folder?.name ?: ""
-                                        isEditingTitle = true
-                                    }
-                                )
+                                modifier = Modifier.combinedClickable(onClick = {
+                                    titleDraft = folder?.name ?: ""
+                                    isEditingTitle = true
+                                })
                             )
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Înapoi")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                         }
                     },
                     actions = {
                         if (isEditingTitle) {
                             IconButton(onClick = {
-                                if (titleDraft.isNotBlank()) {
-                                    viewModel.renameFolder(folderId, titleDraft)
-                                }
+                                if (titleDraft.isNotBlank()) viewModel.renameFolder(folderId, titleDraft)
                                 isEditingTitle = false
                             }) {
-                                Icon(Icons.Default.Check, "Salvează")
+                                Icon(Icons.Default.Check, stringResource(R.string.folder_save_title))
                             }
                         } else {
                             IconButton(onClick = { viewModel.toggleLayout() }) {
                                 Icon(
                                     if (isTileLayout) Icons.Default.ViewList else Icons.Default.GridView,
-                                    contentDescription = "Schimbă layout"
+                                    stringResource(R.string.folder_toggle_layout)
                                 )
                             }
                         }
@@ -156,30 +143,20 @@ fun FolderDetailScreen(
                 Column(horizontalAlignment = Alignment.End) {
                     if (showFabMenu) {
                         SmallFloatingActionButton(
-                            onClick = {
-                                showNotePicker = true
-                                showFabMenu = false
-                            },
+                            onClick = { showNotePicker = true; showFabMenu = false },
                             modifier = Modifier.padding(bottom = 8.dp)
-                        ) {
-                            Icon(Icons.Default.PlaylistAdd, "Adaugă note existente")
-                        }
+                        ) { Icon(Icons.Default.PlaylistAdd, stringResource(R.string.folder_add_existing)) }
+
                         SmallFloatingActionButton(
                             onClick = {
-                                viewModel.createNoteInFolder(folderId)
-                                    .let { newNoteId -> onNoteClick(newNoteId) }
+                                viewModel.createNoteInFolder(folderId).let { onNoteClick(it) }
                                 showFabMenu = false
                             },
                             modifier = Modifier.padding(bottom = 8.dp)
-                        ) {
-                            Icon(Icons.Default.NoteAdd, "Notă nouă")
-                        }
+                        ) { Icon(Icons.Default.NoteAdd, stringResource(R.string.folder_add_new_note)) }
                     }
                     FloatingActionButton(onClick = { showFabMenu = !showFabMenu }) {
-                        Icon(
-                            if (showFabMenu) Icons.Default.Close else Icons.Default.Add,
-                            contentDescription = null
-                        )
+                        Icon(if (showFabMenu) Icons.Default.Close else Icons.Default.Add, null)
                     }
                 }
             }
@@ -187,33 +164,15 @@ fun FolderDetailScreen(
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             when (val state = uiState) {
-                is FolderDetailUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
+                is FolderDetailUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
 
                 is FolderDetailUiState.Success -> {
                     if (state.notes.isEmpty()) {
-                        Column(
-                            modifier = Modifier.align(Alignment.Center),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                Icons.Default.FolderOpen,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.FolderOpen, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(Modifier.height(16.dp))
-                            Text(
-                                "Folderul este gol",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                "Apasă + pentru a adăuga note",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text(stringResource(R.string.folder_detail_empty_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.folder_detail_empty_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     } else {
                         if (isTileLayout) {
@@ -228,14 +187,8 @@ fun FolderDetailScreen(
                                     NoteTileCard(
                                         note = note,
                                         isSelected = selectedNoteIds.contains(note.id),
-                                        onClick = {
-                                            if (isSelectionMode) viewModel.toggleNoteSelection(note.id)
-                                            else onNoteClick(note.id)
-                                        },
-                                        onLongClick = {
-                                            viewModel.enterSelectionMode()
-                                            viewModel.toggleNoteSelection(note.id)
-                                        }
+                                        onClick = { if (isSelectionMode) viewModel.toggleNoteSelection(note.id) else onNoteClick(note.id) },
+                                        onLongClick = { viewModel.enterSelectionMode(); viewModel.toggleNoteSelection(note.id) }
                                     )
                                 }
                             }
@@ -250,14 +203,8 @@ fun FolderDetailScreen(
                                         note = note,
                                         isSelected = selectedNoteIds.contains(note.id),
                                         isSelectionMode = isSelectionMode,
-                                        onClick = {
-                                            if (isSelectionMode) viewModel.toggleNoteSelection(note.id)
-                                            else onNoteClick(note.id)
-                                        },
-                                        onLongClick = {
-                                            viewModel.enterSelectionMode()
-                                            viewModel.toggleNoteSelection(note.id)
-                                        },
+                                        onClick = { if (isSelectionMode) viewModel.toggleNoteSelection(note.id) else onNoteClick(note.id) },
+                                        onLongClick = { viewModel.enterSelectionMode(); viewModel.toggleNoteSelection(note.id) },
                                         onRemoveFromFolder = { viewModel.removeNoteFromFolder(note) },
                                         onDelete = { viewModel.deleteNote(note) }
                                     )
@@ -267,19 +214,13 @@ fun FolderDetailScreen(
                     }
                 }
 
-                is FolderDetailUiState.Error -> {
-                    Text(
-                        state.message,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
+                is FolderDetailUiState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
             }
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FolderNoteItem(
     note: Note,
@@ -293,41 +234,31 @@ fun FolderNoteItem(
     var showMenu by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        modifier = Modifier.fillMaxWidth().combinedClickable(onClick = onClick, onLongClick = onLongClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-            else MaterialTheme.colorScheme.surface
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
         )
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = note.title.ifBlank { "(fără titlu)" },
+                text = note.title.ifBlank { stringResource(R.string.no_title) },
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
-
             if (!isSelectionMode) {
                 Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = null)
-                    }
+                    IconButton(onClick = { showMenu = true }) { Icon(Icons.Default.MoreVert, null) }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
-                            text = { Text("Scoate din folder") },
+                            text = { Text(stringResource(R.string.folder_remove_from_folder)) },
                             leadingIcon = { Icon(Icons.Default.FolderOff, null) },
                             onClick = { onRemoveFromFolder(); showMenu = false }
                         )
                         DropdownMenuItem(
-                            text = { Text("Șterge", color = MaterialTheme.colorScheme.error) },
+                            text = { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) },
                             leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
                             onClick = { onDelete(); showMenu = false }
                         )
