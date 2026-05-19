@@ -87,7 +87,15 @@ fun NoteEditorScreen(
     val handleSave = {
         val currentNote = (uiState as? NoteEditorUiState.Success)?.note
         val tags = currentNote?.tags ?: emptyList()
-        viewModel.saveNote(title, content, tags)
+        val styledContent = """
+            
+            [bold=$isBold]
+            [italic=$isItalic]
+            [underline=$isUnderline]
+            $content
+        """.trimIndent()
+
+        viewModel.saveNote(title, styledContent, tags)
     }
 
     Scaffold(
@@ -235,10 +243,23 @@ fun NoteEditorScreen(
                     viewModel.loadNote(noteId)
                 }
 
-                LaunchedEffect(state.note?.id) {
+                LaunchedEffect(key1 = state.note?.id) {
                     title = state.note?.title ?: ""
-                    content = state.note?.content ?: ""
 
+                    val savedContent = state.note?.content ?: ""
+
+                    isBold = savedContent.contains("[bold=true]")
+                    isItalic = savedContent.contains("[italic=true]")
+                    isUnderline = savedContent.contains("[underline=true]")
+
+                    content = savedContent
+                        .replace("[bold=true]", "")
+                        .replace("[bold=false]", "")
+                        .replace("[italic=true]", "")
+                        .replace("[italic=false]", "")
+                        .replace("[underline=true]", "")
+                        .replace("[underline=false]", "")
+                        .trim()
                 }
 
                 Column(
