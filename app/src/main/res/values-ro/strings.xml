@@ -50,7 +50,7 @@
     <string name="export_txt">Exportă ca .txt</string>
     <string name="import_txt">Importă din .txt</string>
     <string name="save">Salvează</string>
-    <string name="note_title_placeholder">Nume notă</string>
+    <string name="note_title_placeholder">Fără titlu</string>
     <string name="note_content_placeholder">Începe să scrii…</string>
     <string name="export_success">Export reușit!</string>
     <string name="export_error">Export eșuat</string>

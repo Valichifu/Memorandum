@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.memorandum.R
 import com.example.memorandum.domain.model.Note
 
@@ -56,6 +57,7 @@ fun NoteTileCard(
 
             Text(
                 text = note.title.ifBlank { stringResource(R.string.no_title) },
+                fontSize = 20.sp,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis

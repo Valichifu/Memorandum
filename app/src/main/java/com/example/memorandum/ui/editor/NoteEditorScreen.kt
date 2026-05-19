@@ -87,15 +87,24 @@ fun NoteEditorScreen(
     }
 
     val handleSave = {
-        val currentNote = (uiState as? NoteEditorUiState.Success)?.note
-        val tags = currentNote?.tags ?: emptyList()
+        val cleanContent = content
+            .replace("[bold=true]", "")
+            .replace("[bold=false]", "")
+            .replace("[italic=true]", "")
+            .replace("[italic=false]", "")
+            .replace("[underline=true]", "")
+            .replace("[underline=false]", "")
+            .trim()
+
         val styledContent = """
-            
             [bold=$isBold]
             [italic=$isItalic]
             [underline=$isUnderline]
-            $content
+        $cleanContent
         """.trimIndent()
+
+        val currentNote = (uiState as? NoteEditorUiState.Success)?.note
+        val tags = currentNote?.tags ?: emptyList()
 
         viewModel.saveNote(title, styledContent, tags)
     }
@@ -243,24 +252,23 @@ fun NoteEditorScreen(
                 }
 
                 LaunchedEffect(key1 = state.note?.id) {
-                        title = state.note?.title ?: ""
+                    title = state.note?.title ?: ""
 
-                        val savedContent = state.note?.content ?: ""
+                    val savedContent = state.note?.content ?: ""
 
-                        isBold = savedContent.contains("[bold=true]")
-                        isItalic = savedContent.contains("[italic=true]")
-                        isUnderline = savedContent.contains("[underline=true]")
+                    isBold = savedContent.contains("[bold=true]")
+                    isItalic = savedContent.contains("[italic=true]")
+                    isUnderline = savedContent.contains("[underline=true]")
 
-                        content = savedContent
-                            .replace("[bold=true]", "")
-                            .replace("[bold=false]", "")
-                            .replace("[italic=true]", "")
-                            .replace("[italic=false]", "")
-                            .replace("[underline=true]", "")
-                            .replace("[underline=false]", "")
-                            .trim()
-                        content = state.note?.content ?: ""
-                    }
+                    content = savedContent
+                        .replace("[bold=true]", "")
+                        .replace("[bold=false]", "")
+                        .replace("[italic=true]", "")
+                        .replace("[italic=false]", "")
+                        .replace("[underline=true]", "")
+                        .replace("[underline=false]", "")
+                        .trim()
+                }
 
                     Column(
                         modifier = Modifier
@@ -271,13 +279,25 @@ fun NoteEditorScreen(
                         TextField(
                             value = title,
                             onValueChange = { title = it },
-                            placeholder = { Text(stringResource(R.string.note_title_placeholder)) },
+
+                            placeholder = {
+                                Text(
+                                    text = stringResource(id = R.string.note_title_placeholder),
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+
                             modifier = Modifier.fillMaxWidth(),
+
                             singleLine = true,
+
                             textStyle = TextStyle(
                                 fontSize = 26.sp,
                                 fontWeight = FontWeight.Bold
                             ),
+
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
@@ -299,6 +319,7 @@ fun NoteEditorScreen(
                                     .fillMaxSize()
                                     .padding(bottom = 28.dp),
                                 textStyle = TextStyle(
+                                    fontSize = 20.sp,
                                     fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                                     fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal,
                                     textDecoration = if (isUnderline)
