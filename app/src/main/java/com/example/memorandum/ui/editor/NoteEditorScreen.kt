@@ -350,7 +350,6 @@ fun NoteEditorScreen(
         }
     }
 }
-
 @Composable
 fun StyleButton(
     text: String,
