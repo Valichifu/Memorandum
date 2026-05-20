@@ -2,18 +2,18 @@ package com.example.memorandum.utils
 
 import android.content.Context
 import android.content.res.Configuration
-import android.os.Build
-import java.util.*
+import java.util.Locale
 
 object LocaleManager {
 
     fun setLocale(context: Context, language: String): Context {
         val locale = when (language) {
-            "Romanian" -> Locale("ro", "RO")
-            "Ukrainian" -> Locale("uk", "UA")
-            "Spanish" -> Locale("es", "ES")
-            "Portuguese" -> Locale("pt", "PT")
-            else -> Locale("en", "US")
+            "Romanian", "Română" -> Locale.forLanguageTag("ro-RO")
+            "Ukrainian", "Українська" -> Locale.forLanguageTag("uk-UA")
+            "Spanish", "Español" -> Locale.forLanguageTag("es-ES")
+            "Portuguese", "Português" -> Locale.forLanguageTag("pt-PT")
+            "Russian", "Русский" -> Locale.forLanguageTag("ru-RU")
+            else -> Locale.forLanguageTag("en-US")
         }
 
         Locale.setDefault(locale)
@@ -21,12 +21,6 @@ object LocaleManager {
         val config = Configuration(context.resources.configuration)
         config.setLocale(locale)
 
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            context.createConfigurationContext(config)
-        } else {
-            @Suppress("DEPRECATION")
-            context.resources.updateConfiguration(config, context.resources.displayMetrics)
-            context
-        }
+        return context.createConfigurationContext(config)
     }
 }

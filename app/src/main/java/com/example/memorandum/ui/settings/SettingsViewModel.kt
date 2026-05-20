@@ -15,7 +15,8 @@ data class SettingsUiState(
     val isDarkMode: Boolean = false,
     val isTileLayout: Boolean = false,
     val language: String = "English",
-    val trashAutoDeleteDays: Int = 30  // ✅ Câmpul există
+    val trashAutoDeleteDays: Int = 30,
+    val dynamicColor: Boolean = true
 )
 
 @HiltViewModel
@@ -23,14 +24,14 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
-    // ✅ FIX: Adaugă settingsRepository.trashAutoDeleteDays în combine
     val uiState: StateFlow<SettingsUiState> = combine(
         settingsRepository.isDarkMode,
         settingsRepository.isTileLayout,
         settingsRepository.language,
-        settingsRepository.trashAutoDeleteDays  // <--- ASTA LIPSEA!
-    ) { darkMode, tileLayout, language, trashDays ->  // <--- ȘI AICI (4 parametri)
-        SettingsUiState(darkMode, tileLayout, language, trashDays)  // <--- ȘI AICI (4 argumente)
+        settingsRepository.trashAutoDeleteDays,
+        settingsRepository.dynamicColor
+    ) { darkMode, tileLayout, language, trashDays,dynamic ->
+        SettingsUiState(darkMode, tileLayout, language, trashDays, dynamic)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -48,16 +49,21 @@ class SettingsViewModel @Inject constructor(
             settingsRepository.setLayout(isTile)
         }
     }
-
-    fun setLanguage(lang: String) {
+    fun setLanguageAndRestart(lang: String, onRestart: () -> Unit) {
         viewModelScope.launch {
             settingsRepository.setLanguage(lang)
+            onRestart()
         }
     }
 
     fun setTrashAutoDelete(days: Int) {
         viewModelScope.launch {
             settingsRepository.setTrashAutoDeleteDays(days)
+        }
+    }
+    fun toggleDynamicColor() {
+        viewModelScope.launch {
+            settingsRepository.setDynamicColor(!uiState.value.dynamicColor)
         }
     }
 }
