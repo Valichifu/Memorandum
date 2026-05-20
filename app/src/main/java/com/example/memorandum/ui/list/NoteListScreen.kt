@@ -55,7 +55,7 @@ fun NoteListScreen(
     var searchQuery by remember { mutableStateOf("") }
     var showSortDialog by remember { mutableStateOf(false) }
 
-    // Stări temporare doar pentru design (schiță)
+    // Stări pentru filtre active
     var filterFavoritesOnly by remember { mutableStateOf(false) }
     var filterNoTitleOnly by remember { mutableStateOf(false) }
 
@@ -121,9 +121,9 @@ fun NoteListScreen(
                 .imePadding()
         ) {
 
-            // --- SCHIȚĂ FILTRE (DESIGN DOAR) ---
+            // --- SECTIUNE FILTRE FUNCTIONALE ---
             if (!isSelectionMode) {
-                Spacer(modifier = Modifier.height(4.dp)) // spațiu mic de sus
+                Spacer(modifier = Modifier.height(4.dp))
 
                 LazyRow(
                     modifier = Modifier
@@ -136,10 +136,13 @@ fun NoteListScreen(
                     item {
                         FilterChip(
                             selected = filterFavoritesOnly,
-                            onClick = {
-                                filterFavoritesOnly = !filterFavoritesOnly
+                            onClick = { filterFavoritesOnly = !filterFavoritesOnly },
+                            label = {
+                                Text(
+                                    text = "Favorite",
+                                    fontWeight = FontWeight.Bold
+                                )
                             },
-                            label = { Text("Favorite") },
                             leadingIcon = {
                                 if (filterFavoritesOnly) {
                                     Icon(Icons.Default.Check, null, Modifier.size(18.dp))
@@ -153,10 +156,13 @@ fun NoteListScreen(
                     item {
                         FilterChip(
                             selected = filterNoTitleOnly,
-                            onClick = {
-                                filterNoTitleOnly = !filterNoTitleOnly
+                            onClick = { filterNoTitleOnly = !filterNoTitleOnly },
+                            label = {
+                                Text(
+                                    text = "Fără titlu",
+                                    fontWeight = FontWeight.Bold
+                                )
                             },
-                            label = { Text("Fără titlu") },
                             leadingIcon = {
                                 if (filterNoTitleOnly) {
                                     Icon(Icons.Default.Check, null, Modifier.size(18.dp))
@@ -168,7 +174,7 @@ fun NoteListScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(0.dp)) // spațiu mic până la notițe
+                Spacer(modifier = Modifier.height(0.dp))
             }
 
             when (val state = uiState) {
@@ -180,9 +186,15 @@ fun NoteListScreen(
                 }
 
                 is NoteListUiState.Success -> {
-                    // Între timp, lista rămâne neschimbată (ia toate notele direct din state)
-                    // TODO CÂND ADĂUGĂM FUNCȚIONALITATEA: Aici vom folosi o listă filtrată venită din ViewModel
-                    val notesToShow = state.notes
+                    // Logica de filtrare în timp real pe baza tagurilor active
+                    val notesToShow = remember(state.notes, filterFavoritesOnly, filterNoTitleOnly) {
+                        state.notes.filter { note ->
+                            val matchesFavorite = !filterFavoritesOnly || note.isFavorite
+                            val matchesNoTitle = !filterNoTitleOnly || note.title.isBlank()
+
+                            matchesFavorite && matchesNoTitle
+                        }
+                    }
 
                     if (notesToShow.isEmpty()) {
                         Box(
@@ -192,8 +204,19 @@ fun NoteListScreen(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Default.Note, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(16.dp))
-                                Text(stringResource(R.string.no_notes_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text(stringResource(R.string.no_notes_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                                // Text dinamic: dacă nu sunt note din cauza filtrelor, afișăm un mesaj dedicat
+                                val hasActiveFilters = filterFavoritesOnly || filterNoTitleOnly
+                                Text(
+                                    text = if (hasActiveFilters) "Nicio notiță nu corespunde filtrelor" else stringResource(R.string.no_notes_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = if (hasActiveFilters) "Dezactivează filtrele pentru a vedea toate notele" else stringResource(R.string.no_notes_subtitle),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     } else {
@@ -330,7 +353,7 @@ fun NoteItem(
     val cardColor by animateColorAsState(
         targetValue = when {
             isSelected -> MaterialTheme.colorScheme.primaryContainer
-            note.isFavorite -> Color(0xFFFFF8E1) // galben deschis
+            note.isFavorite -> Color(0xFFFFF8E1)
             else -> MaterialTheme.colorScheme.surfaceVariant
         },
         animationSpec = tween(durationMillis = 300),
@@ -343,7 +366,6 @@ fun NoteItem(
         label = "glowAlpha"
     )
 
-    // Fix pentru culori text în Dark Mode când nota este favorită
     val textColor = if (note.isFavorite && !isSelected) Color.Black else MaterialTheme.colorScheme.onSurface
     val secondaryTextColor = if (note.isFavorite && !isSelected) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant
 
@@ -384,7 +406,7 @@ fun NoteItem(
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = textColor // Forțat negru dacă e favorită
+                    color = textColor
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
@@ -394,7 +416,7 @@ fun NoteItem(
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = secondaryTextColor // Forțat gri închis/negru dacă e favorită
+                    color = secondaryTextColor
                 )
             }
 
