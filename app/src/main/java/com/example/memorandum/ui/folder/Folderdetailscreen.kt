@@ -8,6 +8,9 @@ import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.NoteAdd
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -130,7 +133,7 @@ fun FolderDetailScreen(
                         } else {
                             IconButton(onClick = { viewModel.toggleLayout() }) {
                                 Icon(
-                                    if (isTileLayout) Icons.Default.ViewList else Icons.Default.GridView,
+                                    if (isTileLayout) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
                                     stringResource(R.string.folder_toggle_layout)
                                 )
                             }
@@ -146,7 +149,7 @@ fun FolderDetailScreen(
                         SmallFloatingActionButton(
                             onClick = { showNotePicker = true; showFabMenu = false },
                             modifier = Modifier.padding(bottom = 8.dp)
-                        ) { Icon(Icons.Default.PlaylistAdd, stringResource(R.string.folder_add_existing)) }
+                        ) { Icon(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.folder_add_existing)) }
 
                         SmallFloatingActionButton(
                             onClick = {
@@ -154,7 +157,7 @@ fun FolderDetailScreen(
                                 showFabMenu = false
                             },
                             modifier = Modifier.padding(bottom = 8.dp)
-                        ) { Icon(Icons.Default.NoteAdd, stringResource(R.string.folder_add_new_note)) }
+                        ) { Icon(Icons.AutoMirrored.Filled.NoteAdd, stringResource(R.string.folder_add_new_note)) }
                     }
                     FloatingActionButton(onClick = { showFabMenu = !showFabMenu }) {
                         Icon(if (showFabMenu) Icons.Default.Close else Icons.Default.Add, null)
