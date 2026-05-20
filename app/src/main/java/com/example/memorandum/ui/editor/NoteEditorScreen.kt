@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -77,7 +79,7 @@ fun NoteEditorScreen(
     val handleSave = {
         val currentNote = (uiState as? NoteEditorUiState.Success)?.note
         val tags = currentNote?.tags ?: emptyList()
-        viewModel.saveNote(title, content, tags)
+        viewModel.saveNote(title, content.trim(), tags)
     }
 
     Scaffold(
@@ -116,7 +118,9 @@ fun NoteEditorScreen(
                             ) {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.export_txt)) },
-                                    leadingIcon = { Icon(Icons.Default.Upload, contentDescription = null) },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Upload, contentDescription = null)
+                                    },
                                     onClick = {
                                         showMenu = false
                                         val currentNote = (uiState as? NoteEditorUiState.Success)?.note
@@ -128,7 +132,9 @@ fun NoteEditorScreen(
                                 )
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.import_txt)) },
-                                    leadingIcon = { Icon(Icons.Default.Download, contentDescription = null) },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Download, contentDescription = null)
+                                    },
                                     onClick = {
                                         showMenu = false
                                         importLauncher.launch("text/*")
@@ -159,9 +165,10 @@ fun NoteEditorScreen(
                 LaunchedEffect(noteId) {
                     viewModel.loadNote(noteId)
                 }
-                LaunchedEffect(state.note?.id) {
+
+                LaunchedEffect(key1 = state.note?.id) {
                     title = state.note?.title ?: ""
-                    content = state.note?.content ?: ""
+                    content = (state.note?.content ?: "").trim()
                 }
 
                 Column(
@@ -173,9 +180,17 @@ fun NoteEditorScreen(
                     TextField(
                         value = title,
                         onValueChange = { title = it },
-                        placeholder = { Text(stringResource(R.string.note_title_placeholder)) },
+                        placeholder = {
+                            Text(
+                                text = stringResource(id = R.string.note_title_placeholder),
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
+                        textStyle = TextStyle(fontSize = 26.sp, fontWeight = FontWeight.Bold),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
@@ -196,6 +211,7 @@ fun NoteEditorScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(bottom = 28.dp),
+                            textStyle = TextStyle(fontSize = 20.sp),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,

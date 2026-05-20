@@ -40,6 +40,9 @@ class FolderDetailViewModel @Inject constructor(
     private val _selectedNoteIds = MutableStateFlow<Set<Int>>(emptySet())
     val selectedNoteIds: StateFlow<Set<Int>> = _selectedNoteIds.asStateFlow()
 
+    private val _navigateToNote = MutableSharedFlow<Int>()
+    val navigateToNote = _navigateToNote.asSharedFlow()
+
     fun loadFolder(folderId: Int) {
         viewModelScope.launch {
             combine(
@@ -67,12 +70,11 @@ class FolderDetailViewModel @Inject constructor(
         }
     }
 
-    fun createNoteInFolder(folderId: Int): Int {
-        var newId = -1
+    fun createNoteInFolder(folderId: Int) {
         viewModelScope.launch {
-            newId = noteRepository.createNoteInFolder(folderId)
+            val newId = noteRepository.createNoteInFolder(folderId)
+            _navigateToNote.emit(newId)
         }
-        return newId
     }
 
     fun addNotesToFolder(noteIds: Set<Int>, folderId: Int) {
@@ -117,6 +119,14 @@ class FolderDetailViewModel @Inject constructor(
     fun toggleNoteSelection(id: Int) {
         _selectedNoteIds.update { current ->
             if (current.contains(id)) current - id else current + id
+        }
+    }
+
+    fun toggleFavorite(noteId: Int) {
+        viewModelScope.launch {
+            val current = (uiState.value as? FolderDetailUiState.Success)?.notes
+                ?.find { it.id == noteId } ?: return@launch
+            noteRepository.updateNote(current.copy(isFavorite = !current.isFavorite))
         }
     }
 }

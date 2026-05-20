@@ -42,4 +42,5 @@ interface NoteRepository {
     suspend fun removeNotesFromFolder(noteIds: Set<Int>)
 
     suspend fun deleteNotesByIds(noteIds: Set<Int>)
+
 }
