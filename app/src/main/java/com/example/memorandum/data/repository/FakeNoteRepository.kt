@@ -144,4 +144,31 @@ class FakeNoteRepository : NoteRepository {
         _notes.update { current -> current + newNote }
         return newNote.id
     }
+
+    override fun getNotesByFolderId(folderId: Int): Flow<List<Note>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getNotesWithoutFolder(): Flow<List<Note>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun createNoteInFolder(folderId: Int): Int {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun assignNotesToFolder(
+        noteIds: Set<Int>,
+        folderId: Int
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun removeNotesFromFolder(noteIds: Set<Int>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteNotesByIds(noteIds: Set<Int>) {
+        TODO("Not yet implemented")
+    }
 }
