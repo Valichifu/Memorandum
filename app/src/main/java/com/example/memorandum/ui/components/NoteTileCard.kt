@@ -1,6 +1,7 @@
 package com.example.memorandum.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import com.example.memorandum.util.highlightSearchQuery
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,22 +55,25 @@ fun NoteTileCard(
                 Spacer(Modifier.height(4.dp))
             }
 
+            val titleText = note.title.ifBlank { stringResource(R.string.no_title) }
             Text(
-                text = note.title.ifBlank { stringResource(R.string.no_title) },
+                text = titleText.highlightSearchQuery(), // Highlight implement
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
+
             if (note.content.isNotBlank()) {
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = note.content,
+                    text = note.content.highlightSearchQuery(), // Highlight 2
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
             }
         }
     }
