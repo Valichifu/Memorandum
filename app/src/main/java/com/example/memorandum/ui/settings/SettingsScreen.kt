@@ -174,7 +174,7 @@ fun SettingsScreen(
                 title = { Text(stringResource(R.string.select_language)) },
                 text = {
                     Column {
-                        listOf("English", "Romanian", "Ukrainian", "Spanish", "Portuguese").forEach { lang ->
+                        listOf("English", "Romanian", "Ukrainian", "Spanish", "Portuguese", "Russian").forEach { lang ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

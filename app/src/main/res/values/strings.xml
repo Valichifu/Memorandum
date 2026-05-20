@@ -62,7 +62,32 @@
     <string name="import_success">Import successful! Note is open.</string>
     <string name="import_error">Import failed</string>
 
+    <string name="folder_list_title">Folders</string>
+    <string name="folder_new">New folder</string>
+    <string name="folder_new_placeholder">Folder name…</string>
+    <string name="folder_create">Create</string>
+    <string name="folder_rename">Rename</string>
+    <string name="folder_delete">Delete</string>
+    <string name="folder_empty_title">No folders yet</string>
+    <string name="folder_empty_subtitle">Press + to create one</string>
 
+    <string name="folder_detail_empty_title">This folder is empty</string>
+    <string name="folder_detail_empty_subtitle">Press + to add notes</string>
+    <string name="folder_remove_from_folder">Remove from folder</string>
+    <string name="folder_add_existing">Add existing notes</string>
+    <string name="folder_add_new_note">New note</string>
+    <string name="folder_save_title">Save</string>
+    <string name="folder_toggle_layout">Toggle layout</string>
+    <string name="folder_exit_selection">Cancel selection</string>
+    <string name="folder_remove_selected">Remove from folder</string>
+    <string name="folder_delete_selected">Delete selected</string>
+    <string name="folder_selected_count">%1$d selected</string>
+
+    <string name="picker_title">Add notes to folder</string>
+    <string name="picker_empty">No notes available.\nAll notes are already in folders.</string>
+    <string name="picker_no_title">(no title)</string>
+    <string name="picker_confirm">Add (%1$d)</string>
+    <string name="picker_cancel">Cancel</string>
 
     <string name="lang_english" translatable="false">English</string>
     <string name="lang_romanian" translatable="false">Romanian</string>
