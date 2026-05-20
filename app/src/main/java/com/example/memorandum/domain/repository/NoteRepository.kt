@@ -31,5 +31,15 @@ interface NoteRepository {
     suspend fun exportNoteToTxt(context: Context, noteId: Int, uri: Uri): Boolean
     suspend fun importNoteFromTxt(context: Context, uri: Uri): Int?
 
+    fun getNotesByFolderId(folderId: Int): Flow<List<Note>>
 
+        fun getNotesWithoutFolder(): Flow<List<Note>>
+
+    suspend fun createNoteInFolder(folderId: Int): Int
+
+    suspend fun assignNotesToFolder(noteIds: Set<Int>, folderId: Int)
+
+    suspend fun removeNotesFromFolder(noteIds: Set<Int>)
+
+    suspend fun deleteNotesByIds(noteIds: Set<Int>)
 }

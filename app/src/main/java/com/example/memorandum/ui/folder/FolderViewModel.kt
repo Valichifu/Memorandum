@@ -2,8 +2,8 @@ package com.example.memorandum.ui.folder
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.memorandum.domain.model.Folder
 import com.example.memorandum.data.repository.FolderRepository
+import com.example.memorandum.domain.model.Folder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -21,7 +21,6 @@ class FolderViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<FolderUiState>(FolderUiState.Loading)
-
     val uiState: StateFlow<FolderUiState> = _uiState.asStateFlow()
 
     init {
@@ -32,22 +31,22 @@ class FolderViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getAllFolders()
                 .onStart { _uiState.value = FolderUiState.Loading }
-                .catch { e -> _uiState.value = FolderUiState.Error(e.message ?: "Unknown error") }
-                .collect { folders ->
-                    _uiState.value = FolderUiState.Success(folders)
-                }
+                .catch { e -> _uiState.value = FolderUiState.Error(e.message ?: "Eroare") }
+                .collect { folders -> _uiState.value = FolderUiState.Success(folders) }
         }
     }
 
     fun createFolder(name: String) {
-        if (name.isBlank()) return
-
         viewModelScope.launch {
-            val newFolder = Folder(
-                name = name,
-                createdAt = System.currentTimeMillis()
+            repository.createFolder(
+                Folder(name = name, createdAt = System.currentTimeMillis())
             )
-            repository.createFolder(newFolder)
+        }
+    }
+
+    fun renameFolder(folder: Folder, newName: String) {
+        viewModelScope.launch {
+            repository.updateFolder(folder.copy(name = newName))
         }
     }
 
