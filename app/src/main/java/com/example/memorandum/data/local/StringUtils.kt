@@ -8,7 +8,7 @@ import androidx.compose.ui.text.font.FontWeight
 
 
 fun String.highlightSearchQuery(
-    highlightColor: Color = Color(0xFFFFD166) // Culoarea highlight
+    highlightColor: Color = Color(0xFFB7E4C7) // Culoarea highlight
 ): AnnotatedString {
     val text = this
 

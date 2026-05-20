@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface NoteDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun createNote(note: NoteEntity)
+    suspend fun createNote(note: NoteEntity): Long
 
     @Update
     suspend fun updateNote(note: NoteEntity)
@@ -35,12 +35,13 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE isDeleted = 0 ORDER BY createdAt DESC")
     fun getNotesSortedByCreatedAt(): Flow<List<NoteEntity>>
 
-    @Query("SELECT * FROM notes WHERE isDeleted = 0 ORDER BY updatedAt DESC")
-    fun getNotesSortedByUpdatedAt(): Flow<List<NoteEntity>>
 
     @Query("SELECT * FROM notes WHERE (title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%') AND isDeleted = 0 ORDER BY createdAt DESC")
     fun searchNotesSortedByCreatedAt(query: String): Flow<List<NoteEntity>>
 
+
+    @Query("SELECT * FROM notes WHERE isDeleted = 0 ORDER BY updatedAt DESC")
+    fun getNotesSortedByUpdatedAt(): Flow<List<NoteEntity>>
 
     @Query("SELECT * FROM notes WHERE folderId = :folderId AND isDeleted = 0 ORDER BY createdAt DESC")
     fun getNotesInFolder(folderId: Int): Flow<List<NoteEntity>>
@@ -71,9 +72,8 @@ interface NoteDao {
         """
     SELECT 
         notes.id,
-        notes.title,
-        
-        snippet(notes_search, '[start]', '[end]', '...', 1, -30) as content,
+snippet(notes_search, '[start]', '[end]', '...', 0, -10) as title, 
+snippet(notes_search, '[start]', '[end]', '...', 1, -30) as content, 
         notes.tags,
         notes.createdAt,
         notes.updatedAt,

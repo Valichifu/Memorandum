@@ -71,28 +71,25 @@ class NoteListViewModel @Inject constructor(
                             }
                         }
                     } else {
-                        when {
-                            query.isNotBlank() && sort == SortType.CREATED_AT_DESC -> {
-                                repository.searchNotesSortedByCreatedAt(query)
-                                    .map { it.filter { !it.isDeleted } }
-                            }
-                            query.isBlank() && sort == SortType.CREATED_AT_DESC -> {
-                                repository.getNotesSortedByCreatedAt()
-                                    .map { it.filter { !it.isDeleted } }
-                            }
-                            query.isBlank() && sort == SortType.UPDATED_AT_DESC -> {
-                                repository.getNotesSortedByUpdatedAt()
-                                    .map { it.filter { !it.isDeleted } }
-                            }
-                            else -> {
-                                val baseFlow = if (query.isBlank()) repository.getAllNotes() else repository.searchNotes(query)
-                                baseFlow.map { notes ->
+                        if (query.isNotBlank()) {
+                            repository.searchNotesSortedByCreatedAt(query)
+                                .map { notes ->
                                     val activeNotes = notes.filter { !it.isDeleted }
                                     when (sort) {
-                                        SortType.ALPHABETICAL_ASC -> activeNotes.sortedBy { it.title.lowercase() }
                                         SortType.UPDATED_AT_DESC -> activeNotes.sortedByDescending { it.updatedAt }
-                                        else -> activeNotes
+                                        SortType.ALPHABETICAL_ASC -> activeNotes.sortedBy { it.title.lowercase() }
+                                        SortType.CREATED_AT_DESC -> activeNotes
                                     }
+                                }
+                        } else {
+                            val baseFlow = when (sort) {
+                                SortType.CREATED_AT_DESC -> repository.getNotesSortedByCreatedAt()
+                                SortType.UPDATED_AT_DESC -> repository.getNotesSortedByUpdatedAt()
+                                SortType.ALPHABETICAL_ASC -> repository.getAllNotes()
+                            }
+                            baseFlow.map { notes ->
+                                notes.filter { !it.isDeleted }.let { active ->
+                                    if (sort == SortType.ALPHABETICAL_ASC) active.sortedBy { it.title.lowercase() } else active
                                 }
                             }
                         }
@@ -172,8 +169,7 @@ class NoteListViewModel @Inject constructor(
                             )
                         }
                     }
-                } catch (_: Exception) {
-                }
+                } catch (_: Exception) { }
             }
             exitSelectionMode()
         }

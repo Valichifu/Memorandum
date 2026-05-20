@@ -32,21 +32,18 @@ class OfflineNoteRepository @Inject constructor(
 
     override suspend fun insertNote(note: Note) {
         val entity = noteMapper.toEntity(note)
-        noteDao.createNote(entity)
+        val id = noteDao.createNote(entity)
 
         // Sincronizare cu @FTS
-        val savedNote = noteDao.getAllNotes().first().maxByOrNull { it.id }
-        savedNote?.let {
-            noteDao.insertSearchNote(
-                NoteSearchEntity(rowId = it.id, title = it.title, content = it.content)
-            )
-        }
+        noteDao.insertSearchNote(
+            NoteSearchEntity(rowId = id.toInt(), title = entity.title, content = entity.content)
+        )
     }
 
     override suspend fun updateNote(note: Note) {
         val entity = noteMapper.toEntity(note)
         noteDao.updateNote(entity)
-        // Обновляем поисковый индекс
+
         noteDao.insertSearchNote(
             NoteSearchEntity(rowId = entity.id, title = entity.title, content = entity.content)
         )
@@ -60,11 +57,12 @@ class OfflineNoteRepository @Inject constructor(
     }
 
     override fun searchNotes(query: String): Flow<List<Note>> {
+        val ftsQuery = if (query.isBlank()) "" else "$query*"
         return if (query.isBlank()) {
             getAllNotes()
         } else {
             // Folosim FTS
-            noteDao.searchNotesWithHighlight(query).map { entities ->
+            noteDao.searchNotesWithHighlight(ftsQuery).map { entities ->
                 entities.map { noteMapper.toDomain(entity = it) }
             }
         }
@@ -92,8 +90,12 @@ class OfflineNoteRepository @Inject constructor(
         }
     }
 
+
+
+
     override fun searchNotesSortedByCreatedAt(query: String): Flow<List<Note>> {
-        return noteDao.searchNotesSortedByCreatedAt(query).map { entities ->
+        val ftsQuery = if (query.isBlank()) "" else "$query*"
+        return noteDao.searchNotesWithHighlight(ftsQuery).map { entities ->
             entities.map { noteMapper.toDomain(it) }
         }
     }
