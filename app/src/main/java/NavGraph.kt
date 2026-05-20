@@ -93,7 +93,6 @@ fun NavGraph(navController: NavHostController) {
                 onFolderClick = { folderId ->
                     navController.navigate(Screen.FolderDetail.createRoute(folderId))
                 },
-                onAddFolder = { /* TODO: dialog pentru folder nou */ },
                 onBack = { navController.popBackStack() }
             )
         }

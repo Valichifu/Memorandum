@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.memorandum.R
 import com.example.memorandum.domain.model.Folder
 
@@ -23,10 +24,9 @@ import com.example.memorandum.domain.model.Folder
 fun FolderListScreen(
     onFolderClick: (Int) -> Unit,
     onBack: () -> Unit,
-    onAddFolder: () -> Unit = {},
     viewModel: FolderViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
     var newFolderName by remember { mutableStateOf("") }
 
@@ -150,7 +150,7 @@ fun FolderItem(
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var showRenameDialog by remember { mutableStateOf(false) }
-    var currentName by remember { mutableStateOf(folder.name) }
+    var currentName by remember(folder.name) { mutableStateOf(folder.name) }
 
     if (showRenameDialog) {
         AlertDialog(

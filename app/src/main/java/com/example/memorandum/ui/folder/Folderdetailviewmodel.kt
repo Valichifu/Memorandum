@@ -67,7 +67,6 @@ class FolderDetailViewModel @Inject constructor(
         }
     }
 
-    /** Creates a new note pre-assigned to this folder, returns the new note id */
     fun createNoteInFolder(folderId: Int): Int {
         var newId = -1
         viewModelScope.launch {
@@ -76,21 +75,18 @@ class FolderDetailViewModel @Inject constructor(
         return newId
     }
 
-    /** Assigns existing notes to this folder */
     fun addNotesToFolder(noteIds: Set<Int>, folderId: Int) {
         viewModelScope.launch {
             noteRepository.assignNotesToFolder(noteIds, folderId)
         }
     }
 
-    /** Removes a single note from the folder (sets folderId = null) */
     fun removeNoteFromFolder(note: Note) {
         viewModelScope.launch {
             noteRepository.updateNote(note.copy(folderId = null))
         }
     }
 
-    /** Removes multiple notes from the folder */
     fun removeNotesFromFolder(noteIds: Set<Int>) {
         viewModelScope.launch {
             noteRepository.removeNotesFromFolder(noteIds)

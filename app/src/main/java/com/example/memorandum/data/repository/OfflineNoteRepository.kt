@@ -65,7 +65,7 @@ class OfflineNoteRepository @Inject constructor(
     override fun getNotesInFolder(folderId: Int): Flow<List<Note>> =
         noteDao.getNotesInFolder(folderId).map { it.map(noteMapper::toDomain) }
 
-    /** Creează o notă goală pre-asignată unui folder și returnează id-ul ei */
+    /* note in folder*/
     override suspend fun createNoteInFolder(folderId: Int): Int {
         val entity = NoteEntity(
             title = "",

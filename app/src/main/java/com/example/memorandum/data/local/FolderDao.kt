@@ -26,5 +26,4 @@ interface FolderDao {
     @Query("SELECT * FROM folders WHERE id = :id")
     fun getFolderById(id: Int): Flow<FolderEntity?>
 
-
 }
