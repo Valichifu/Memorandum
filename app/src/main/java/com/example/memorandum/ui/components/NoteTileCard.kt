@@ -135,14 +135,7 @@ fun NoteTileCard(
             if (note.content.isNotBlank()) {
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = note.content
-                        .replace("[bold=true]", "")
-                        .replace("[bold=false]", "")
-                        .replace("[italic=true]", "")
-                        .replace("[italic=false]", "")
-                        .replace("[underline=true]", "")
-                        .replace("[underline=false]", "")
-                        .trim(),
+                    text = note.content.trim(),
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
