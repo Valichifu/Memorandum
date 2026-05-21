@@ -3,6 +3,7 @@ package com.example.memorandum.data.repository
 import android.content.Context
 import android.net.Uri
 import com.example.memorandum.data.local.NoteDao
+import com.example.memorandum.data.local.NoteEntity
 import com.example.memorandum.data.local.NoteMapper
 import com.example.memorandum.data.local.NoteSearchEntity
 import com.example.memorandum.domain.model.Note
@@ -13,84 +14,67 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+
 class OfflineNoteRepository @Inject constructor(
     private val noteDao: NoteDao,
     private val noteMapper: NoteMapper
 ) : NoteRepository {
 
-    override fun getAllNotes(): Flow<List<Note>> {
-        return noteDao.getAllNotes().map { entities ->
-            entities.map { noteMapper.toDomain(it) }
-        }
-    }
+    override fun getAllNotes(): Flow<List<Note>> =
+        noteDao.getAllNotes().map { it.map(noteMapper::toDomain) }
 
-    override fun getNoteById(id: Int): Flow<Note?> {
-        return noteDao.getNoteById(id).map { entity ->
-            entity?.let { noteMapper.toDomain(it) }
-        }
-    }
+    override fun getNoteById(id: Int): Flow<Note?> =
+        noteDao.getNoteById(id).map { it?.let(noteMapper::toDomain) }
+
 
     override suspend fun insertNote(note: Note) {
         val entity = noteMapper.toEntity(note)
         val id = noteDao.createNote(entity)
-
-        // Sincronizare cu @FTS
         noteDao.insertSearchNote(
             NoteSearchEntity(rowId = id.toInt(), title = entity.title, content = entity.content)
         )
     }
 
+
     override suspend fun updateNote(note: Note) {
         val entity = noteMapper.toEntity(note)
         noteDao.updateNote(entity)
-
         noteDao.insertSearchNote(
             NoteSearchEntity(rowId = entity.id, title = entity.title, content = entity.content)
         )
     }
 
+
     override suspend fun deleteNote(note: Note) {
         val entity = noteMapper.toEntity(note)
         noteDao.deleteNote(entity)
-
         noteDao.deleteSearchNote(entity.id)
     }
+
 
     override fun searchNotes(query: String): Flow<List<Note>> {
         val ftsQuery = if (query.isBlank()) "" else "$query*"
         return if (query.isBlank()) {
             getAllNotes()
         } else {
-            // Folosim FTS
             noteDao.searchNotesWithHighlight(ftsQuery).map { entities ->
-                entities.map { noteMapper.toDomain(entity = it) }
-            }
-        }
-    }
-
-    override fun getNotesByTag(tag: String): Flow<List<Note>> {
-        return noteDao.getAllNotes()
-            .map { entities ->
-                entities.filter { it.tags.split(",").contains(tag) }
-            }
-            .map { entities ->
                 entities.map { noteMapper.toDomain(it) }
             }
-    }
-
-    override fun getNotesSortedByCreatedAt(): Flow<List<Note>> {
-        return noteDao.getNotesSortedByCreatedAt().map { entities ->
-            entities.map { noteMapper.toDomain(it) }
         }
     }
 
-    override fun getNotesSortedByUpdatedAt(): Flow<List<Note>> {
-        return noteDao.getNotesSortedByUpdatedAt().map { entities ->
-            entities.map { noteMapper.toDomain(it) }
+    override fun getNotesByTag(tag: String): Flow<List<Note>> =
+        noteDao.getAllNotes().map { entities ->
+            entities
+                .filter { it.tags.split(",").contains(tag) }
+                .map(noteMapper::toDomain)
         }
-    }
 
+    override fun getNotesSortedByCreatedAt(): Flow<List<Note>> =
+        noteDao.getNotesSortedByCreatedAt().map { it.map(noteMapper::toDomain) }
 
+    override fun getNotesSortedByUpdatedAt(): Flow<List<Note>> =
+        noteDao.getNotesSortedByUpdatedAt().map { it.map(noteMapper::toDomain) }
 
 
     override fun searchNotesSortedByCreatedAt(query: String): Flow<List<Note>> {
@@ -100,45 +84,67 @@ class OfflineNoteRepository @Inject constructor(
         }
     }
 
-    override fun getNotesInFolder(folderId: Int): Flow<List<Note>> {
-        return noteDao.getNotesInFolder(folderId).map { entities ->
-            entities.map { noteMapper.toDomain(it) }
-        }
+
+    override fun getNotesByFolderId(folderId: Int): Flow<List<Note>> =
+        noteDao.getNotesByFolderId(folderId).map { it.map(noteMapper::toDomain) }
+
+    override fun getNotesWithoutFolder(): Flow<List<Note>> =
+        noteDao.getNotesWithoutFolder().map { it.map(noteMapper::toDomain) }
+
+    override fun getRootNotes(): Flow<List<Note>> =
+        noteDao.getRootNotes().map { it.map(noteMapper::toDomain) }
+
+    override fun getNotesInFolder(folderId: Int): Flow<List<Note>> =
+        noteDao.getNotesInFolder(folderId).map { it.map(noteMapper::toDomain) }
+
+    override suspend fun createNoteInFolder(folderId: Int): Int {
+        val entity = NoteEntity(
+            title = "",
+            content = "",
+            folderId = folderId,
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis()
+        )
+        return noteDao.insertNoteAndGetId(entity).toInt()
     }
 
-    override fun getRootNotes(): Flow<List<Note>> {
-        return noteDao.getRootNotes().map { entities ->
-            entities.map { noteMapper.toDomain(it) }
-        }
-    }
+    override suspend fun assignNotesToFolder(noteIds: Set<Int>, folderId: Int) =
+        noteDao.assignNotesToFolder(noteIds, folderId)
 
-    override fun getDeletedNotes(): Flow<List<Note>> {
-        return noteDao.getDeletedNotes().map { entities ->
-            entities.map { noteMapper.toDomain(it) }
-        }
-    }
+    override suspend fun removeNotesFromFolder(noteIds: Set<Int>) =
+        noteDao.removeNotesFromFolder(noteIds)
+
+    override suspend fun deleteNotesByIds(noteIds: Set<Int>) =
+        noteDao.deleteNotesByIds(noteIds)
+
+    override fun getDeletedNotes(): Flow<List<Note>> =
+        noteDao.getDeletedNotes().map { it.map(noteMapper::toDomain) }
 
     override suspend fun restoreNote(noteId: Int) {
-        val noteEntity = noteDao.getNoteById(noteId).firstOrNull() ?: return
-        noteDao.updateNote(
-            noteEntity.copy(isDeleted = false, deletedAt = null)
-        )
+        val entity = noteDao.getNoteById(noteId).firstOrNull() ?: return
+        noteDao.updateNote(entity.copy(isDeleted = false, deletedAt = null))
     }
+
 
     override suspend fun permanentDeleteNote(noteId: Int) {
         noteDao.deleteNoteById(noteId)
         noteDao.deleteSearchNote(noteId)
     }
 
-    override suspend fun emptyTrash() {
+    override suspend fun emptyTrash() =
         noteDao.deleteAllDeletedNotes()
-    }
+
 
     override suspend fun exportNoteToTxt(context: Context, noteId: Int, uri: Uri): Boolean {
         return try {
-            val noteEntity = noteDao.getNoteById(noteId).firstOrNull() ?: return false
-            val note = noteMapper.toDomain(noteEntity)
-            val content = "Title: ${note.title}\nDate: ${note.createdAt}\n\n${note.content}"
+            val entity = noteDao.getNoteById(noteId).firstOrNull() ?: return false
+            val note = noteMapper.toDomain(entity)
+            val content = buildString {
+                appendLine("Title: ${note.title}")
+                appendLine("Date: ${note.createdAt}")
+                appendLine()
+                appendLine(note.content)
+            }
             context.contentResolver.openOutputStream(uri)?.use { it.write(content.toByteArray()) }
             true
         } catch (e: Exception) {
@@ -147,18 +153,51 @@ class OfflineNoteRepository @Inject constructor(
         }
     }
 
+
     override suspend fun importNoteFromTxt(context: Context, uri: Uri): Int? {
         return try {
-            val text = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return null
-            val lines = text.lines().filter { it.isNotBlank() }
-            val title = lines.firstOrNull()?.replace("Title: ", "") ?: "Imported"
-            val content = lines.drop(1).joinToString("\n")
-            val newNote = Note(id = 0, title = title.trim(), content = content.trim())
+            val text = context.contentResolver
+                .openInputStream(uri)?.bufferedReader()?.readText() ?: return null
+
+            val lines = text.lines()
+            var title = "Notă importată"
+            var startIndex = 0
+
+            if (lines.isNotEmpty() && lines[0].startsWith("Title:", ignoreCase = true)) {
+                title = lines[0].substringAfter("Title:").trim()
+                startIndex = 1
+            }
+            if (startIndex < lines.size && lines[startIndex].startsWith("Date:", ignoreCase = true)) {
+                startIndex++
+            }
+            if (startIndex < lines.size && lines[startIndex].isBlank()) {
+                startIndex++
+            }
+
+            val content = lines.drop(startIndex).joinToString("\n").trim()
+
+            val newNote = Note(
+                id = 0,
+                title = title,
+                content = content,
+                createdAt = System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis(),
+                isDeleted = false,
+                isFavorite = false,
+                folderId = null,
+                deletedAt = null,
+                tags = emptyList()
+            )
+
+
             insertNote(newNote)
             noteDao.getAllNotes().first().maxByOrNull { it.id }?.id
+
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
     }
+
+
 }

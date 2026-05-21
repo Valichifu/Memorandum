@@ -88,7 +88,7 @@ class NoteEditorViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.deleteNote(currentNote)
-            } catch (_: Exception) {}
+              } catch (_: Exception) {}
         }
     }
 

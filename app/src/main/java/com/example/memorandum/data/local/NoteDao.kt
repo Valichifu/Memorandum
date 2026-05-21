@@ -59,6 +59,25 @@ interface NoteDao {
     @Query("DELETE FROM notes WHERE id = :noteId")
     suspend fun deleteNoteById(noteId: Int)
 
+    @Insert
+    suspend fun insertNoteAndGetId(note: NoteEntity): Long
+
+    @Query("SELECT * FROM notes WHERE folderId = :folderId AND isDeleted = 0")
+    fun getNotesByFolderId(folderId: Int): Flow<List<NoteEntity>>
+
+    @Query("SELECT * FROM notes WHERE folderId IS NULL AND isDeleted = 0")
+    fun getNotesWithoutFolder(): Flow<List<NoteEntity>>
+
+    @Query("UPDATE notes SET folderId = :folderId WHERE id IN (:noteIds)")
+    suspend fun assignNotesToFolder(noteIds: Set<Int>, folderId: Int)
+
+    @Query("UPDATE notes SET folderId = NULL WHERE id IN (:noteIds)")
+    suspend fun removeNotesFromFolder(noteIds: Set<Int>)
+
+    @Query("DELETE FROM notes WHERE id IN (:noteIds)")
+    suspend fun deleteNotesByIds(noteIds: Set<Int>)
+
+
     ////FTS4
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

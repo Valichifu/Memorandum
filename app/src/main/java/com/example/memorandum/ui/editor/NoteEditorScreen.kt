@@ -8,11 +8,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.memorandum.R
 import com.example.memorandum.ui.components.ErrorScreen
 import com.example.memorandum.ui.components.LoadingScreen
 import kotlinx.coroutines.launch
@@ -32,9 +38,13 @@ fun NoteEditorScreen(
 
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
-    var isInitialized by remember { mutableStateOf(false) }
 
     var showMenu by remember { mutableStateOf(false) }
+
+    val exportSuccessMsg = stringResource(R.string.export_success)
+    val exportErrorMsg = stringResource(R.string.export_error)
+    val importSuccessMsg = stringResource(R.string.import_success)
+    val importErrorMsg = stringResource(R.string.import_error)
 
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/plain")
@@ -44,9 +54,7 @@ fun NoteEditorScreen(
             currentNote?.let { note ->
                 scope.launch {
                     val success = viewModel.exportNote(context, note.id, targetUri)
-                    snackbarHostState.showSnackbar(
-                        if (success) "Export reușit!" else "Eroare la export"
-                    )
+                    snackbarHostState.showSnackbar(if (success) exportSuccessMsg else exportErrorMsg)
                 }
             }
         }
@@ -58,12 +66,11 @@ fun NoteEditorScreen(
         uri?.let { sourceUri ->
             scope.launch {
                 val newId = viewModel.importNote(context, sourceUri)
-
                 if (newId != null) {
                     viewModel.loadNote(newId)
-                    snackbarHostState.showSnackbar("Import reușit! Nota este deschisă.")
+                    snackbarHostState.showSnackbar(importSuccessMsg)
                 } else {
-                    snackbarHostState.showSnackbar("Eroare la import")
+                    snackbarHostState.showSnackbar(importErrorMsg)
                 }
             }
         }
@@ -72,62 +79,82 @@ fun NoteEditorScreen(
     val handleSave = {
         val currentNote = (uiState as? NoteEditorUiState.Success)?.note
         val tags = currentNote?.tags ?: emptyList()
-        viewModel.saveNote(title, content, tags)
+        viewModel.saveNote(title, content.trim(), tags)
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (noteId == -1) "Notă nouă" else "Editează") },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        handleSave()
-                        onBack()
-                    }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Înapoi")
-                    }
-                },
-                actions = {
-                    Box {
-                        IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Meniu")
+            Surface(
+                shadowElevation = 3.dp,
+                tonalElevation = 1.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                TopAppBar(
+                    title = {
+                        Text(stringResource(if (noteId == -1) R.string.new_note else R.string.edit_note))
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            handleSave()
+                            onBack()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.West,
+                                contentDescription = stringResource(R.string.back)
+                            )
                         }
-
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Export as .txt") },
-                                leadingIcon = { Icon(Icons.Default.Upload, contentDescription = null) },
-                                onClick = {
-                                    showMenu = false
-                                    val currentNote = (uiState as? NoteEditorUiState.Success)?.note
-                                    currentNote?.let { note ->
-                                        val fileName = (note.title.ifBlank { "nota" }).take(20) + ".txt"
-                                        exportLauncher.launch(fileName)
+                    },
+                    actions = {
+                        Box {
+                            IconButton(onClick = { showMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = stringResource(R.string.menu)
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.export_txt)) },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Upload, contentDescription = null)
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        val currentNote = (uiState as? NoteEditorUiState.Success)?.note
+                                        currentNote?.let { note ->
+                                            val fileName = (note.title.ifBlank { "nota" }).take(20) + ".txt"
+                                            exportLauncher.launch(fileName)
+                                        }
                                     }
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Import from .txt") },
-                                leadingIcon = { Icon(Icons.Default.Download, contentDescription = null) },
-                                onClick = {
-                                    showMenu = false
-                                    importLauncher.launch("text/*")
-                                }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.import_txt)) },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Download, contentDescription = null)
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        importLauncher.launch("text/*")
+                                    }
+                                )
+                            }
+                        }
+
+                        IconButton(onClick = {
+                            handleSave()
+                            onBack()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = stringResource(R.string.save)
                             )
                         }
                     }
-
-                    IconButton(onClick = {
-                        handleSave()
-                        onBack()
-                    }) {
-                        Icon(Icons.Default.Check, contentDescription = "Salvează")
-                    }
-                }
-            )
+                )
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -139,10 +166,9 @@ fun NoteEditorScreen(
                     viewModel.loadNote(noteId)
                 }
 
-                LaunchedEffect(state.note?.id) {
+                LaunchedEffect(key1 = state.note?.id) {
                     title = state.note?.title ?: ""
-                    content = state.note?.content ?: ""
-
+                    content = (state.note?.content ?: "").trim()
                 }
 
                 Column(
@@ -154,9 +180,17 @@ fun NoteEditorScreen(
                     TextField(
                         value = title,
                         onValueChange = { title = it },
-                        placeholder = { Text("Numele notei") },
+                        placeholder = {
+                            Text(
+                                text = stringResource(id = R.string.note_title_placeholder),
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
+                        textStyle = TextStyle(fontSize = 26.sp, fontWeight = FontWeight.Bold),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
@@ -165,20 +199,35 @@ fun NoteEditorScreen(
                         )
                     )
                     Spacer(Modifier.height(8.dp))
-                    TextField(
-                        value = content,
-                        onValueChange = { content = it },
-                        placeholder = { Text("Începe să scrii...") },
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
+                            .weight(1f)
+                    ) {
+                        TextField(
+                            value = content,
+                            onValueChange = { content = it },
+                            placeholder = { Text(stringResource(R.string.note_content_placeholder)) },
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(bottom = 28.dp),
+                            textStyle = TextStyle(fontSize = 20.sp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            )
                         )
-                    )
+                        Text(
+                            text = "${content.length}",
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(end = 12.dp, bottom = 8.dp),
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
             else -> {}

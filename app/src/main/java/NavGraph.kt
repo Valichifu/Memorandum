@@ -12,7 +12,7 @@ import com.example.memorandum.ui.settings.SettingsScreen
 import com.example.memorandum.ui.settings.SettingsViewModel
 import com.example.memorandum.ui.welcome.WelcomeLogoScreen
 import com.example.memorandum.ui.folder.FolderListScreen
-import com.example.memorandum.ui.folder.FolderEditorScreen
+import com.example.memorandum.ui.folder.FolderDetailScreen
 import com.example.memorandum.ui.trash.TrashScreen
 import com.example.memorandum.ui.trash.TrashViewModel
 
@@ -23,8 +23,8 @@ sealed class Screen(val route: String) {
         fun createRoute(noteId: String = "new") = "note_editor/$noteId"
     }
     object FolderList : Screen("folder_list")
-    object FolderEditor : Screen("folder_editor/{folderId}") {
-        /*fun createRoute(folderId: String = "new") = "folder_editor/$folderId" */
+    object FolderDetail : Screen("folder_detail/{folderId}") {
+        fun createRoute(folderId: Int) = "folder_detail/$folderId"
     }
     object Settings : Screen("settings")
     object Trash : Screen("trash")
@@ -58,6 +58,9 @@ fun NavGraph(navController: NavHostController) {
                 },
                 onSettings = {
                     navController.navigate(Screen.Settings.route)
+                },
+                onFolderClick = {
+                    navController.navigate(Screen.FolderList.route)
                 }
             )
         }
@@ -87,16 +90,20 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.FolderList.route) {
             FolderListScreen(
-                onFolderClick = { /*id ->  TODO */ },
-                onAddFolder = { /* TODO */ },
+                onFolderClick = { folderId ->
+                    navController.navigate(Screen.FolderDetail.createRoute(folderId))
+                },
                 onBack = { navController.popBackStack() }
             )
         }
 
-        composable(Screen.FolderEditor.route) { backStackEntry ->
-            val folderId = backStackEntry.arguments?.getInt("folderId") ?: -1
-            FolderEditorScreen(
+        composable(Screen.FolderDetail.route) { backStackEntry ->
+            val folderId = backStackEntry.arguments?.getString("folderId")?.toIntOrNull() ?: -1
+            FolderDetailScreen(
                 folderId = folderId,
+                onNoteClick = { noteId ->
+                    navController.navigate(Screen.NoteEditor.createRoute(noteId.toString()))
+                },
                 onBack = { navController.popBackStack() }
             )
         }

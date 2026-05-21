@@ -1,5 +1,6 @@
 package com.example.memorandum.ui.settings
 
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,11 +14,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.res.stringResource
 import com.example.memorandum.R
-import android.os.Build
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,17 +35,23 @@ fun SettingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.settings)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
+            Surface(
+                shadowElevation = 3.dp,
+                tonalElevation = 1.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                TopAppBar(
+                    title = { Text(text = stringResource(R.string.settings)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.back)
+                            )
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { padding ->
         LazyColumn(
@@ -168,7 +174,7 @@ fun SettingsScreen(
                 title = { Text(stringResource(R.string.select_language)) },
                 text = {
                     Column {
-                        listOf("English", "Romanian", "Ukrainian", "Spanish", "Portuguese").forEach { lang ->
+                        listOf("English", "Romanian", "Ukrainian", "Spanish", "Portuguese", "Russian").forEach { lang ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
