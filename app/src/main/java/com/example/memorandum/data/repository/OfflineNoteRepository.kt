@@ -5,6 +5,7 @@ import android.net.Uri
 import com.example.memorandum.data.local.NoteDao
 import com.example.memorandum.data.local.NoteEntity
 import com.example.memorandum.data.local.NoteMapper
+import com.example.memorandum.data.local.NoteSearchEntity
 import com.example.memorandum.domain.model.Note
 import com.example.memorandum.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+
 
 class OfflineNoteRepository @Inject constructor(
     private val noteDao: NoteDao,
@@ -24,17 +26,42 @@ class OfflineNoteRepository @Inject constructor(
     override fun getNoteById(id: Int): Flow<Note?> =
         noteDao.getNoteById(id).map { it?.let(noteMapper::toDomain) }
 
-    override suspend fun insertNote(note: Note) =
-        noteDao.createNote(noteMapper.toEntity(note))
 
-    override suspend fun updateNote(note: Note) =
-        noteDao.updateNote(noteMapper.toEntity(note))
+    override suspend fun insertNote(note: Note) {
+        val entity = noteMapper.toEntity(note)
+        val id = noteDao.createNote(entity)
+        noteDao.insertSearchNote(
+            NoteSearchEntity(rowId = id.toInt(), title = entity.title, content = entity.content)
+        )
+    }
 
-    override suspend fun deleteNote(note: Note) =
-        noteDao.deleteNote(noteMapper.toEntity(note))
 
-    override fun searchNotes(query: String): Flow<List<Note>> =
-        noteDao.searchNotes(query).map { it.map(noteMapper::toDomain) }
+    override suspend fun updateNote(note: Note) {
+        val entity = noteMapper.toEntity(note)
+        noteDao.updateNote(entity)
+        noteDao.insertSearchNote(
+            NoteSearchEntity(rowId = entity.id, title = entity.title, content = entity.content)
+        )
+    }
+
+
+    override suspend fun deleteNote(note: Note) {
+        val entity = noteMapper.toEntity(note)
+        noteDao.deleteNote(entity)
+        noteDao.deleteSearchNote(entity.id)
+    }
+
+
+    override fun searchNotes(query: String): Flow<List<Note>> {
+        val ftsQuery = if (query.isBlank()) "" else "$query*"
+        return if (query.isBlank()) {
+            getAllNotes()
+        } else {
+            noteDao.searchNotesWithHighlight(ftsQuery).map { entities ->
+                entities.map { noteMapper.toDomain(it) }
+            }
+        }
+    }
 
     override fun getNotesByTag(tag: String): Flow<List<Note>> =
         noteDao.getAllNotes().map { entities ->
@@ -49,8 +76,13 @@ class OfflineNoteRepository @Inject constructor(
     override fun getNotesSortedByUpdatedAt(): Flow<List<Note>> =
         noteDao.getNotesSortedByUpdatedAt().map { it.map(noteMapper::toDomain) }
 
-    override fun searchNotesSortedByCreatedAt(query: String): Flow<List<Note>> =
-        noteDao.searchNotesSortedByCreatedAt(query).map { it.map(noteMapper::toDomain) }
+
+    override fun searchNotesSortedByCreatedAt(query: String): Flow<List<Note>> {
+        val ftsQuery = if (query.isBlank()) "" else "$query*"
+        return noteDao.searchNotesWithHighlight(ftsQuery).map { entities ->
+            entities.map { noteMapper.toDomain(it) }
+        }
+    }
 
 
     override fun getNotesByFolderId(folderId: Int): Flow<List<Note>> =
@@ -65,7 +97,6 @@ class OfflineNoteRepository @Inject constructor(
     override fun getNotesInFolder(folderId: Int): Flow<List<Note>> =
         noteDao.getNotesInFolder(folderId).map { it.map(noteMapper::toDomain) }
 
-    /* note in folder*/
     override suspend fun createNoteInFolder(folderId: Int): Int {
         val entity = NoteEntity(
             title = "",
@@ -94,11 +125,15 @@ class OfflineNoteRepository @Inject constructor(
         noteDao.updateNote(entity.copy(isDeleted = false, deletedAt = null))
     }
 
-    override suspend fun permanentDeleteNote(noteId: Int) =
+
+    override suspend fun permanentDeleteNote(noteId: Int) {
         noteDao.deleteNoteById(noteId)
+        noteDao.deleteSearchNote(noteId)
+    }
 
     override suspend fun emptyTrash() =
         noteDao.deleteAllDeletedNotes()
+
 
     override suspend fun exportNoteToTxt(context: Context, noteId: Int, uri: Uri): Boolean {
         return try {
@@ -117,6 +152,7 @@ class OfflineNoteRepository @Inject constructor(
             false
         }
     }
+
 
     override suspend fun importNoteFromTxt(context: Context, uri: Uri): Int? {
         return try {
@@ -153,7 +189,8 @@ class OfflineNoteRepository @Inject constructor(
                 tags = emptyList()
             )
 
-            noteDao.createNote(noteMapper.toEntity(newNote))
+
+            insertNote(newNote)
             noteDao.getAllNotes().first().maxByOrNull { it.id }?.id
 
         } catch (e: Exception) {
@@ -161,4 +198,6 @@ class OfflineNoteRepository @Inject constructor(
             null
         }
     }
+
+
 }

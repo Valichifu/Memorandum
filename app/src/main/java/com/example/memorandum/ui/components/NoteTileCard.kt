@@ -1,6 +1,7 @@
 package com.example.memorandum.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import com.example.memorandum.util.highlightSearchQuery
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -96,7 +97,7 @@ fun NoteTileCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = note.title.ifBlank { stringResource(R.string.no_title) },
+                    text = note.title.ifBlank { stringResource(R.string.no_title) }.highlightSearchQuery(),
                     fontSize = 20.sp,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
@@ -135,12 +136,13 @@ fun NoteTileCard(
             if (note.content.isNotBlank()) {
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = note.content.trim(),
+                    text = note.content.trim().highlightSearchQuery(),
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                     color = secondaryTextColor
                 )
+
             }
 
             Spacer(Modifier.weight(1f))
